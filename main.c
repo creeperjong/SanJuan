@@ -48,21 +48,39 @@ int main(){
     //choose player
 
     int32_t num_of_player = 0;
-
+    
     NEW_PAGE;
     choose_player();
-    scanf("%d", &num_of_player);
+
+    while(1){    
+
+        scanf("%d", &num_of_player);
+        if(num_of_player >= 2 && num_of_player <= 4) break;
+        else{
+            NEW_PAGE;
+            choose_player();
+            error();
+        }
+
+    }
+
     
     //Initialize
 
     sPlayer* player = NULL;
-    player = (sPlayer*)calloc(num_of_player, sizeof(sPlayer));
+    player = (sPlayer*)malloc(sizeof(sPlayer) * num_of_player);
 
+    player_init(player, num_of_player);
     deck_init();
+    shuffle();
     
-    
+    NEW_PAGE;
+    table(player, num_of_player);
+    //sleep(200);
+
     //free
 
+    free_player(player, num_of_player);
     free(player);
         
     return 0;

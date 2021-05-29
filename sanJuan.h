@@ -17,21 +17,28 @@
 #define RESET "\e[m"
 
 #define NEW_PAGE printf("%s", clear)
+#define CARD(x, y) print_tablecard(player, num_of_player, (x), (y), 1)
+#define SUBC(x, y) print_tablecard(player, num_of_player, (x), (y), 2)
 #define INCONCLUSIVE -1
+#define TYPE_CARD 1
+#define TYPE_SUBCARD 2
+
 
 //struct declaration
 
-typedef struct {
+typedef struct _sCard{
     char* name;
     char* description;
     int32_t cost;
     int32_t score;
     int32_t subcard;
+    struct _sCard* next;
 } sCard;
 
 typedef struct {
     int32_t vp;
     sCard* handcard;
+    sCard tablecard[12];
 } sPlayer;
 
 //print.c
@@ -41,10 +48,14 @@ void flush_buffer();
 void notice();
 void menu();
 void about();
-void table();
+void table(sPlayer* player, int32_t num_of_player);
 void choose_player();
 
 //sanJuan.c
 
+void player_init(sPlayer* player, int32_t num_of_player);
 void card_init(int32_t num, char* name, char* description, int32_t cost, int32_t score);
 void deck_init();
+void shuffle();
+char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardNum, int32_t type);
+void free_player(sPlayer* player, int32_t num_of_player);

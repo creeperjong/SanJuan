@@ -1,7 +1,33 @@
 #include "sanJuan.h"
 
-sCard deck[143];
+sCard deck[139];
 int32_t deckIdx = 0;
+
+void player_init(sPlayer* player, int32_t num_of_player){
+
+    for(int32_t i = 0;i < num_of_player;i++){
+
+        player[i].vp = 1;
+        player[i].handcard = NULL;
+        player[i].tablecard[0].name = BLUE"　染　坊　"RESET;
+        player[i].tablecard[0].description = "生產階段 → 你生產一份染料。";
+        player[i].tablecard[0].cost = 1;
+        player[i].tablecard[0].score = 1;
+        player[i].tablecard[0].subcard = 0;
+        player[i].tablecard[0].next = NULL;
+
+        for(int32_t j = 1;j < 8;j++){
+            player[i].tablecard[j].name = NULL;
+            player[i].tablecard[j].description = NULL;
+            player[i].tablecard[j].cost = 0;
+            player[i].tablecard[j].score = 0;
+            player[i].tablecard[j].subcard = 0;
+            player[i].tablecard[j].next = NULL;
+        }
+
+    }
+
+}
 
 void card_init(int32_t num, char* name, char* description, int32_t cost, int32_t score){
     
@@ -11,6 +37,7 @@ void card_init(int32_t num, char* name, char* description, int32_t cost, int32_t
         deck[i].cost = cost;
         deck[i].score = score;
         deck[i].subcard = 0;
+        deck[i].next = NULL;
     }
     deckIdx = deckIdx + num;
 
@@ -18,7 +45,7 @@ void card_init(int32_t num, char* name, char* description, int32_t cost, int32_t
 
 void deck_init(){
     
-    card_init(11, BLUE"　染　坊　"RESET, "生產階段 → 你生產一份染料。", 1, 1);
+    card_init(7, BLUE"　染　坊　"RESET, "生產階段 → 你生產一份染料。", 1, 1);
     card_init(8, WHITE"　製糖廠　"RESET, "生產階段 → 你生產一份砂糖。", 2, 1);
     card_init(9, BROWN_LIGHT"　菸草廠　"RESET, "生產階段 → 你生產一份菸草。", 3, 2);
     card_init(9, BROWN_DARK"咖啡烘焙廠"RESET, "生產階段 → 你生產一份咖啡。", 4, 2);
@@ -42,7 +69,7 @@ void deck_init(){
     card_init(3, VIOLET"　圖書館　"RESET, "所有階段 → 你所選的職業特權加倍。", 5, 3);
     card_init(3, VIOLET"　雕　像　"RESET, "紀念碑 → 無特殊功能。", 3, 3);
     card_init(3, VIOLET"勝利紀念柱"RESET, "紀念碑 → 無特殊功能。", 4, 4);
-    card_init(3, VIOLET"　英雄像　"RESET, "紀念碑 → 無特殊功能", 5, 5);
+    card_init(3, VIOLET"　英雄像　"RESET, "紀念碑 → 無特殊功能。", 5, 5);
     card_init(2, VIOLET"　工　會　"RESET, "遊戲結束 → 你的每種工廠建築額外得一分，且每種工廠建築再額外得一分。", 6, INCONCLUSIVE);
     card_init(2, VIOLET"　市政廳　"RESET, "遊戲結束 → 你的每種城市建築額外得一分（包括此張卡牌）。", 6, INCONCLUSIVE);
     card_init(2, VIOLET"　凱旋門　"RESET, "遊戲結束 → 你因擁有１／２／３種紀念碑而獲得４／６／８分。", 6, INCONCLUSIVE);
@@ -58,5 +85,71 @@ void deck_init(){
     card_init(3, VIOLET"　金工坊　"RESET, "礦工階段 → 你抽一張牌，若尚未有任何玩家建造此建築，即可保留它，否則丟入棄牌堆。", 5, 3);
     card_init(2, VIOLET"　官　邸　"RESET, "遊戲結束 → 將三棟費用相同的不同建築視為一組，若你擁有１／２／３／４組，則額外獲得４／７／９／１０分。", 6, INCONCLUSIVE);
     deckIdx = 0;
+
+}
+
+void shuffle(){
+
+    srand(time(0));
+
+    for(int32_t i = 0;i < 139;i++){
+         
+        int32_t randomIdx = rand() % 139;
+        sCard tmp = {0};
+
+        while(randomIdx == i) randomIdx = rand() % 139;
+
+        tmp = deck[i];
+        deck[i] = deck[randomIdx];
+        deck[randomIdx] = tmp;
+
+    }
+
+    // for(int32_t i = 0;i < 139;i++){
+    //     printf("%s %s\n", deck[i].name, deck[i].description);
+    // }
+
+}
+
+char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardNUm, int32_t type){
+
+    char* blank = "　　　　　";
+    static char buf[32] = "";
+
+    if(type == TYPE_CARD){
+        if(num_of_player >= playerNum){
+            if(player[playerNum-1].tablecard[tablecardNUm-1].name != NULL) return player[playerNum-1].tablecard[tablecardNUm-1].name;
+            else return blank;
+        }
+        else return blank;
+    }
+
+    if(type == TYPE_SUBCARD){
+        if(num_of_player >= playerNum){
+            if(player[playerNum-1].tablecard[tablecardNUm-1].subcard != 0){
+                snprintf(buf, 32, "蓋牌：　%d", player[playerNum-1].tablecard[tablecardNUm-1].subcard);
+                return buf;
+            }
+            else return blank;
+        }
+        else return blank;
+    }
+
+}
+
+void free_player(sPlayer* player, int32_t num_of_player){
+
+    for(int32_t i = 0;i < num_of_player;i++){
+        
+        sCard* pre = NULL;
+        sCard* now = player[i].handcard->next;
+
+        while(now != NULL){
+            pre = now;
+            now = now->next;
+            free(pre);
+        }
+
+    }
 
 }
