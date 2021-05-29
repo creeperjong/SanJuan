@@ -142,7 +142,7 @@ void free_player(sPlayer* player, int32_t num_of_player){
     for(int32_t i = 0;i < num_of_player;i++){
         
         sCard* pre = NULL;
-        sCard* now = player[i].handcard->next;
+        sCard* now = player[i].handcard;
 
         while(now != NULL){
             pre = now;

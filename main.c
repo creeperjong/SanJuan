@@ -74,8 +74,8 @@ int main(){
     deck_init();
     shuffle();
     
-    NEW_PAGE;
-    table(player, num_of_player);
+    // NEW_PAGE;
+    // table(player, num_of_player);
     //sleep(200);
 
     //free
