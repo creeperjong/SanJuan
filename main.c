@@ -4,6 +4,8 @@ char* clear = "\e[H\e[2J\e[3J";
 
 int main(){
 
+    srand(time(0));
+
     //Notice page
 
     NEW_PAGE;
@@ -11,18 +13,17 @@ int main(){
 
     //Menu
 
-    int32_t menu_choice = 0;
-
     NEW_PAGE;
     menu();
 
     while(1){
 
         bool breakFlag = false;
+        int32_t choice = 0;
 
-        scanf("%d", &menu_choice);
+        scanf("%d", &choice);
 
-        switch(menu_choice){
+        switch(choice){
             case 1:
                 breakFlag = true;
                 break;
@@ -45,7 +46,7 @@ int main(){
         if(breakFlag) break;
     }
 
-    //choose player
+    //Choose player
 
     int32_t num_of_player = 0;
     
@@ -68,17 +69,18 @@ int main(){
     //Initialize
 
     sPlayer* player = NULL;
-    player = (sPlayer*)malloc(sizeof(sPlayer) * num_of_player);
+    int32_t governor = rand() % num_of_player + 1;
+    player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
     player_init(player, num_of_player);
     deck_init();
     shuffle();
-    
-    // NEW_PAGE;
-    // table(player, num_of_player);
-    //sleep(200);
+    distribute(player, num_of_player, governor);
 
-    //free
+    
+    
+
+    //Free
 
     free_player(player, num_of_player);
     free(player);
