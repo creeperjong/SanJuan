@@ -4,6 +4,17 @@ sCard deck[139];
 sCard discardDeck[139];
 int32_t deckIdx = 0;
 int32_t discardDeckIdx = 0;
+bool profession_table[6] = {0};
+int32_t profession_now = 0;
+
+void global_var_init(){
+
+    memset(deck, 0, sizeof(sCard) * 139);
+    memset(discardDeck, 0, sizeof(sCard) * 139);
+    memset(profession_table, 0, sizeof(int32_t) * 6);
+    profession_now = -1;
+
+}
 
 void player_init(sPlayer* player, int32_t num_of_player){
 
@@ -135,8 +146,12 @@ void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card){
         memcpy(now, &deck[deckIdx], sizeof(sCard));
         memset(&deck[deckIdx], 0, sizeof(sCard));
 
+        //Redirect
+
         if(player[playerNum].num_of_handcard != 0) pre->next = now;
         else player[playerNum].handcard = now;
+
+        //deck
 
         player[playerNum].num_of_handcard++;
         deckIdx--;
@@ -155,14 +170,19 @@ bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum){
         
         if(handcardNum == now->num){
                      
-            memcpy(&discardDeck[discardDeckIdx++], now, sizeof(sCard));
+            memcpy(&discardDeck[discardDeckIdx], now, sizeof(sCard));
 
             //Redirect
 
             if(now == player[playerNum].handcard) player[playerNum].handcard = now->next;
             else pre->next = now->next;
 
+            //discardDeck
+
             player[playerNum].num_of_handcard--;
+            discardDeckIdx++;
+            player[0].num_of_tablecard = discardDeckIdx;
+            
             free(now);
             return true;
 
@@ -192,8 +212,31 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
         
         table(player, num_of_player);
+
+        if(playerNum != 1){
+
+            printf("%d號玩家棄牌中...\n", playerNum);
+            sleep(3);
+
+            int32_t num_of_discard = player[playerNum].num_of_handcard - 4;
+
+            sCard* pre = NULL;
+            sCard* now = player[playerNum].handcard;
+
+            for(int32_t i = 0;i < num_of_discard;i++){
+
+                pre = now;
+                now = now->next;
+
+                discard(player, playerNum, pre->num);
+
+            }
+
+            continue;
+        }
+
         handcard(player, playerNum);
-        printf("請選擇動作（1:查看卡片敘述 2:棄牌）...\n");
+        printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
 
         while(1){
             
@@ -203,29 +246,7 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
             scanf("%d", &choice);
 
             switch(choice){
-                case 1:{
-
-                    sCard* now = player[playerNum].handcard;
-                    char c = 0;
-
-                    table(player, num_of_player);
-                    handcard(player, playerNum);
-                    while(now != NULL){
-                        printf("%s %s\n", now->name, now->description);
-                        now = now->next;
-                    }
-                    printf("\n");
-
-                    printf("請按Enter繼續...");
-                    flush_buffer();
-                    c = getchar();
-                    table(player, num_of_player);
-                    handcard(player, playerNum);
-                    printf("請選擇動作（1:查看卡片敘述 2:棄牌）...\n");
-
-                    break;
-                }
-                case 2:
+                case 1:
 
                     table(player, num_of_player);
                     handcard(player, playerNum);
@@ -246,7 +267,7 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
                             breakFlag = false;
                             table(player, num_of_player);
                             handcard(player, playerNum);
-                            printf("請選擇動作（1:查看卡片敘述 2:棄牌）...\n");
+                            printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
                             error();
                             break;
                         }
@@ -254,11 +275,33 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
                     }
 
                     break;
+                case 2:{
+
+                    sCard* now = player[playerNum].handcard;
+                    char c = 0;
+
+                    table(player, num_of_player);
+                    handcard(player, playerNum);
+                    while(now != NULL){
+                        printf("%s　%s\n", now->name, now->description);
+                        now = now->next;
+                    }
+                    printf("\n");
+
+                    printf("請按Enter繼續...");
+                    flush_buffer();
+                    c = getchar();
+                    table(player, num_of_player);
+                    handcard(player, playerNum);
+                    printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
+
+                    break;
+                }
                 default:
 
                     table(player, num_of_player);
                     handcard(player, playerNum);
-                    printf("請選擇動作（1:查看卡片敘述 2:棄牌）...\n");
+                    printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
                     error();
                     break;
             }
@@ -297,6 +340,95 @@ char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum,
 
 }
 
+void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player){
+
+    table(player, num_of_player);
+
+    if(playerNum != 1){
+
+        printf("輪到%d號玩家選擇職業中...\n", playerNum);
+        sleep(3);
+
+        profession_now = rand() % 5 + 1;
+        while(profession_table[profession_now] == true) profession_now = rand() % 5 + 1;
+        profession_table[profession_now] = true;
+
+        return;
+    }
+
+    printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
+
+    while(1){
+            
+        bool breakFlag = false;
+        int32_t choice = 0;
+
+        scanf("%d", &choice);
+
+        switch(choice){
+            case 1:
+
+                table(player, num_of_player);
+
+                printf("請選擇職業...\n目前可選職業：");
+              
+                if(!profession_table[BUILDER]) printf(" (1) 建築師");
+                if(!profession_table[COUNCILLOR]) printf(" (2) 議員");
+                if(!profession_table[PRODUCER]) printf(" (3) 製造商");
+                if(!profession_table[PROSPECTOR]) printf(" (4) 礦工");
+                if(!profession_table[TRADER]) printf(" (5) 貿易商");
+                printf("\n");
+
+                scanf("%d", &profession_now);
+
+                if(profession_now >= 1 && profession_now <= 5 && !profession_table[profession_now]){
+                    breakFlag = true;
+                    profession_table[profession_now] = true;
+                }
+                else{
+                    breakFlag = false;
+                    table(player, num_of_player);
+                    printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
+                    error();
+                    break;
+                }
+
+                break;
+            case 2:{
+
+                char c = 0;
+
+                table(player, num_of_player);
+                printf("建築師：\n\t"GREEN"行動：每個人可以建造一棟建築"RESET RED"　特權：建築師可以少支付一張牌的建造費用\n"RESET);
+                printf("議員：\n\t"GREEN"行動：每個人抽兩張牌並選擇其中一張保留"RESET RED"　特權：議員額外抽三張牌\n"RESET);
+                printf("製造商：\n\t"GREEN"行動：每人可以生產一份貨物"RESET RED"　特權：製造商可以額外生產一份貨物\n"RESET);
+                printf("礦工：\n\t"GREEN"行動：無"RESET RED"　特權：礦工抽一張牌\n"RESET);
+                printf("貿易商：\n\t"GREEN"行動：每個人可以販賣一份貨物"RESET RED"　特權：建築師可以少支付一張牌的建造費用\n"RESET);
+                printf("\n");
+
+                printf("請按Enter繼續...");
+                flush_buffer();
+                c = getchar();
+                table(player, num_of_player);
+                printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
+
+                break;
+            }
+            default:
+
+                table(player, num_of_player);
+                printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
+                error();
+                break;
+        }
+
+        if(breakFlag) break;
+
+    }
+
+
+}
+
 void free_player(sPlayer* player, int32_t num_of_player){
 
     for(int32_t i = 0;i <= num_of_player;i++){
@@ -311,5 +443,7 @@ void free_player(sPlayer* player, int32_t num_of_player){
         }
 
     }
+
+    free(player);
 
 }

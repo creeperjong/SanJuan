@@ -72,18 +72,36 @@ int main(){
     int32_t governor = rand() % num_of_player + 1;
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
+    global_var_init();
     player_init(player, num_of_player);
     deck_init();
     shuffle();
     distribute(player, num_of_player, governor);
 
-    
-    
+    //Game start
+
+    while(1){   //Every governor round
+
+        governor = rand() % num_of_player + 1;
+        
+        int32_t playerNum = governor;
+
+        for(int32_t i = 0;i < num_of_player;i++){   //Every player round
+
+            choose_profession(player, playerNum, num_of_player);
+
+            //Prepare for next player
+
+            playerNum++;
+            if(playerNum > num_of_player) playerNum = 1;
+
+        }
+
+    }
 
     //Free
 
     free_player(player, num_of_player);
-    free(player);
         
     return 0;
 }

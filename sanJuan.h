@@ -10,14 +10,25 @@
 
 //color
 
-#define RED "\e[1;91m"
+#define RED "\e[1;38;2;255;0;64m"
 #define BLUE "\e[1;38;2;80;170;206m"
 #define GRAY "\e[1;38;2;180;180;180m"
 #define WHITE "\e[1;38;2;255;255;255m"
 #define BROWN_LIGHT "\e[1;38;2;175;125;127m"
 #define BROWN_DARK "\e[1;38;2;207;149;97m"
 #define VIOLET "\e[1;38;2;209;62;253m"
+#define GREEN "\e[1;38;2;128;255;0m"
 #define RESET "\e[m"
+
+//profession
+
+#define BUILDER 1
+#define COUNCILLOR 2
+#define PRODUCER 3
+#define PROSPECTOR 4
+#define TRADER 5
+
+//others
 
 #define NEW_PAGE printf("%s", clear)
 #define CARD(x, y) print_tablecard(player, num_of_player, (x), (y), 1)
@@ -63,6 +74,7 @@ void handcard(sPlayer* player, int32_t playerNum);
 
 //sanJuan.c
 
+void global_var_init();
 void player_init(sPlayer* player, int32_t num_of_player);
 void card_init(int32_t num, int32_t cardNum, char* name, char* description, int32_t cost, int32_t score);
 void deck_init();
@@ -71,4 +83,5 @@ void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card);
 bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum);
 void distribute(sPlayer* player, int32_t num_of_player, int32_t governor);
 char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardNum, int32_t type);
+void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player);
 void free_player(sPlayer* player, int32_t num_of_player);
