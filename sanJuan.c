@@ -5,14 +5,12 @@ sCard discardDeck[139];
 int32_t deckIdx = 0;
 int32_t discardDeckIdx = 0;
 bool profession_table[6] = {0};
-int32_t profession_now = 0;
 
 void global_var_init(){
 
     memset(deck, 0, sizeof(sCard) * 139);
     memset(discardDeck, 0, sizeof(sCard) * 139);
     memset(profession_table, 0, sizeof(int32_t) * 6);
-    profession_now = -1;
 
 }
 
@@ -59,7 +57,7 @@ void card_init(int32_t num, int32_t cardNum, char* name, char* description, int3
     }
     deckIdx = deckIdx + num;
 
-}
+} //建築前/建築後/議員前/議員後/生產前/生產後/礦工前/貿易前/貿易後/開始/結束/全前
 
 void deck_init(){
     
@@ -107,16 +105,16 @@ void deck_init(){
 
 }
 
-void shuffle(){
+void shuffle(int32_t num_of_card){
 
     srand(time(0));
 
-    for(int32_t i = 0;i < 139;i++){
+    for(int32_t i = 0;i < num_of_card;i++){
          
-        int32_t randomIdx = rand() % 139;
+        int32_t randomIdx = rand() % num_of_card;
         sCard tmp = {0};
 
-        while(randomIdx == i) randomIdx = rand() % 139;
+        while(randomIdx == i) randomIdx = rand() % num_of_card;
 
         tmp = deck[i];
         deck[i] = deck[randomIdx];
@@ -124,13 +122,22 @@ void shuffle(){
 
     }
 
-    // for(int32_t i = 0;i < 139;i++){
-    //     printf("%s %s\n", deck[i].name, deck[i].description);
-    // }
-
 }
 
 void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card){
+
+    if(deckIdx + 1 < num_of_card){
+
+        memcpy(&deck[deckIdx + 1], discardDeck, sizeof(sCard) * discardDeckIdx);
+        memset(discardDeck, 0, sizeof(sCard) * 139);
+
+        deckIdx = deckIdx + discardDeckIdx;
+        shuffle(deckIdx + 1);
+
+        discardDeckIdx = 0;
+        player[0].num_of_tablecard = discardDeckIdx;
+
+    }
 
     for(int32_t i = 0;i < num_of_card;i++){
         
@@ -181,7 +188,7 @@ bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum){
 
             player[playerNum].num_of_handcard--;
             discardDeckIdx++;
-            player[0].num_of_tablecard = discardDeckIdx;
+            player[0].num_of_tablecard = discardDeckIdx;    //Record number of card in discard deck
             
             free(now);
             return true;
@@ -340,7 +347,9 @@ char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum,
 
 }
 
-void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player){
+int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player){
+
+    int32_t profession_now = 0;
 
     table(player, num_of_player);
 
@@ -353,7 +362,7 @@ void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player
         while(profession_table[profession_now] == true) profession_now = rand() % 5 + 1;
         profession_table[profession_now] = true;
 
-        return;
+        return profession_now;
     }
 
     printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
@@ -390,7 +399,6 @@ void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player
                     table(player, num_of_player);
                     printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
                     error();
-                    break;
                 }
 
                 break;
@@ -426,6 +434,77 @@ void choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player
 
     }
 
+    return profession_now;
+
+}
+
+void round_start(sPlayer* player, int32_t num_of_player, int32_t governor){
+
+    table(player, num_of_player);
+    printf("此輪的州長是%d號玩家\n", governor);
+    sleep(1);
+    
+    for(int32_t i = 1;i <= num_of_player;i++){
+
+        
+
+    }
+
+}
+
+void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+
+    table(player, num_of_player);
+    printf("%d號玩家選擇了建築師，現在是建築階段\n\n", playerNum_profession);
+    sleep(1);
+    printf("%d號玩家行動中...\n", playerNum_act);
+    sleep(3);
+
+}
+
+void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+
+    table(player, num_of_player);
+    printf("%d號玩家選擇了議員，現在是議員階段\n\n", playerNum_profession);
+    sleep(1);
+    printf("%d號玩家行動中...\n", playerNum_act);
+    sleep(3);
+
+}
+
+void producer_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+
+    table(player, num_of_player);
+    printf("%d號玩家選擇了製造商，現在是生產階段\n\n", playerNum_profession);
+    sleep(1);
+    printf("%d號玩家行動中...\n", playerNum_act);
+    sleep(3);
+
+}
+
+void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+
+    table(player, num_of_player);
+    printf("%d號玩家選擇了礦工，現在是礦工階段\n\n", playerNum_profession);
+    sleep(1);
+    printf("%d號玩家行動中...\n", playerNum_act);
+    sleep(3);
+
+}
+
+void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+
+    table(player, num_of_player);
+    printf("%d號玩家選擇了貿易商，現在是交易階段\n\n", playerNum_profession);
+    sleep(1);
+    printf("%d號玩家行動中...\n", playerNum_act);
+    sleep(3);
+
+}
+
+void reset_profession_table(){
+
+    memset(profession_table, 0, sizeof(int32_t) * 6);
 
 }
 

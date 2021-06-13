@@ -70,32 +70,66 @@ int main(){
 
     sPlayer* player = NULL;
     int32_t governor = rand() % num_of_player + 1;
+
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
     global_var_init();
     player_init(player, num_of_player);
     deck_init();
-    shuffle();
+    shuffle(139);
     distribute(player, num_of_player, governor);
 
     //Game start
 
     while(1){   //Every governor round
-
-        governor = rand() % num_of_player + 1;
         
-        int32_t playerNum = governor;
+        int32_t playerNum_profession = governor;    //Initialize for the next layer loop
+        round_start(player, num_of_player, governor);
 
-        for(int32_t i = 0;i < num_of_player;i++){   //Every player round
+        for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
 
-            choose_profession(player, playerNum, num_of_player);
+            int32_t playerNum_act = playerNum_profession;   //Initialize for the next layer loop
+            int32_t profession_choice = choose_profession(player, playerNum_profession, num_of_player);
 
-            //Prepare for next player
+            for(int32_t j = 0;j < num_of_player;j++){   //Every player take an action
 
-            playerNum++;
-            if(playerNum > num_of_player) playerNum = 1;
+                switch(profession_choice){
+                    case BUILDER:
+                        builder_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case COUNCILLOR:
+                        councillor_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case PRODUCER:
+                        producer_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case PROSPECTOR:
+                        prospector_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case TRADER:
+                        trader_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                }
+
+                //Prepare for next player to take action
+
+                playerNum_act++;
+                if(playerNum_act > num_of_player) playerNum_act = 1;
+
+            }
+
+            //Prepare for next player to choose 
+
+            playerNum_profession++;
+            if(playerNum_profession > num_of_player) playerNum_profession = 1;
 
         }
+
+        //Prepare for next governor
+
+        governor++;
+        if(governor > num_of_player) governor = 1;
+        reset_profession_table();
 
     }
 
