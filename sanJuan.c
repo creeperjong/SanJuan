@@ -444,9 +444,9 @@ void round_start(sPlayer* player, int32_t num_of_player, int32_t governor){
     printf("此輪的州長是%d號玩家\n", governor);
     sleep(1);
     
-    for(int32_t i = 1;i <= num_of_player;i++){
+    for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
 
-        
+        //todo: card and decide whether i should put the function of care in another file
 
     }
 

@@ -28,6 +28,48 @@
 #define PROSPECTOR 4
 #define TRADER 5
 
+//card
+
+#define INDIGO 1
+#define SUGAR 2
+#define TOBACCO 3
+#define COFFEE 4
+#define SILVER 5
+#define SMITHY 6
+#define GOLDMINE 7
+#define ARCHIVE 8
+#define POOR_HOUSE 9
+#define MARKET_STAND 10
+#define BLACK_MARKET 11
+#define TRADING_POST 12
+#define WELL 13
+#define CRANE 14
+#define CHAPEL 15
+#define TOWER 16
+#define AQUADUCT 17
+#define CARPENTER 18
+#define PREFECTURE 19
+#define MARKET_HALL 20
+#define QUARRY 21
+#define LIBRARY 22
+#define STATUE 23
+#define VICTORY_COLUMN 24
+#define HERO 25
+#define GUILD_HALL 26
+#define CITY_HALL 27
+#define TRIUMPHAL_ARCH 28
+#define PALACE 29
+#define GUARD_ROOM 30
+#define OFFICE_BUILDING 31
+#define COTTAGE 32
+#define TAVERN 33
+#define PARK 34
+#define BANK 35
+#define CUSTOMS_OFFICE 36
+#define HARBOR 37
+#define GOLDSMITH 38
+#define RESIDENCE 39
+
 //others
 
 #define NEW_PAGE printf("%s", clear)
