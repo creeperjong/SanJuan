@@ -1,7 +1,9 @@
-all:sanJuan.o print.o
-	gcc main.c sanJuan.o print.o -o main
+all:sanJuan.o card.o print.o
+	gcc main.c sanJuan.o card.o print.o -o main
 sanJuan:
 	gcc -c sanJuan.c -o sanJuan.o
+card:
+	gcc -c card.c -o card.o
 print:
 	gcc -c print.c -o print.o
 clean:

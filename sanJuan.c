@@ -4,13 +4,16 @@ sCard deck[139];
 sCard discardDeck[139];
 int32_t deckIdx = 0;
 int32_t discardDeckIdx = 0;
+
 bool profession_table[6] = {0};
+bool bank_used_table[5] = {0};
 
 void global_var_init(){
 
     memset(deck, 0, sizeof(sCard) * 139);
     memset(discardDeck, 0, sizeof(sCard) * 139);
-    memset(profession_table, 0, sizeof(int32_t) * 6);
+    memset(profession_table, 0, sizeof(bool) * 6);
+    memset(bank_used_table, 0, sizeof(bool) * 5);
 
 }
 
@@ -22,7 +25,7 @@ void player_init(sPlayer* player, int32_t num_of_player){
         player[i].handcard = NULL;
         player[i].num_of_handcard = 0;
         player[i].num_of_tablecard = 1;
-        player[i].tablecard[1].num = 1;
+        player[i].tablecard[1].id = 1;
         player[i].tablecard[1].name = BLUE"　染　坊　"RESET;
         player[i].tablecard[1].description = "生產階段 → 你生產一份染料。";
         player[i].tablecard[1].cost = 1;
@@ -31,7 +34,7 @@ void player_init(sPlayer* player, int32_t num_of_player){
         player[i].tablecard[1].next = NULL;
 
         for(int32_t j = 2;j <= 12;j++){
-            player[i].tablecard[j].num = 0;
+            player[i].tablecard[j].id = 0;
             player[i].tablecard[j].name = NULL;
             player[i].tablecard[j].description = NULL;
             player[i].tablecard[j].cost = 0;
@@ -44,10 +47,10 @@ void player_init(sPlayer* player, int32_t num_of_player){
 
 }
 
-void card_init(int32_t num, int32_t cardNum, char* name, char* description, int32_t cost, int32_t score){
+void card_init(int32_t num, int32_t id, char* name, char* description, int32_t cost, int32_t score){
     
     for(int32_t i = deckIdx;i < deckIdx + num;i++){
-        deck[i].num = cardNum;
+        deck[i].id = id;
         deck[i].name = name;
         deck[i].description = description;
         deck[i].cost = cost;
@@ -106,8 +109,6 @@ void deck_init(){
 }
 
 void shuffle(int32_t num_of_card){
-
-    srand(time(0));
 
     for(int32_t i = 0;i < num_of_card;i++){
          
@@ -168,14 +169,14 @@ void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card){
 
 }
 
-bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum){
+void discard(sPlayer* player, int32_t playerNum, sCard* target){
 
     sCard* pre = NULL;
     sCard* now = player[playerNum].handcard;
 
     while(now != NULL){
         
-        if(handcardNum == now->num){
+        if(now == target){
                      
             memcpy(&discardDeck[discardDeckIdx], now, sizeof(sCard));
 
@@ -191,7 +192,7 @@ bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum){
             player[0].num_of_tablecard = discardDeckIdx;    //Record number of card in discard deck
             
             free(now);
-            return true;
+            return;
 
         }
 
@@ -200,7 +201,111 @@ bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum){
 
     }
 
-    return false;
+}
+
+bool discard_with_instuction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_discard, char* afterError){
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+
+    printf("你需要棄掉%d張牌，請以空格為分隔符，輸入要棄掉的卡片編號（重複的牌亦須重複輸入）...\n", num_of_discard);
+    for(int32_t i = 0;i < num_of_discard;i++){
+
+        int32_t card_id = 0;
+        sCard* target = NULL;
+        scanf("%d", &card_id);
+
+        if((target = find_handcard(player, playerNum, card_id)) != NULL) discard(player, playerNum, target);
+        else{
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            if(afterError != NULL) printf("%s\n", afterError);
+            error();
+            return false;
+        }
+
+    }
+
+    return true;
+
+}
+
+void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sCard* target){
+
+    //tablecard
+
+    sCard* pre = NULL;
+    sCard* now = player[playerNum].tablecard[tablecardIdx].next;
+
+    while(now != NULL){
+        pre = now;
+        now = now->next;
+    }
+
+    now = (sCard*)malloc(sizeof(sCard));
+    memcpy(now, target, sizeof(sCard));
+    player[playerNum].tablecard[tablecardIdx].subcard++;
+
+    //handcard
+
+    now = player[playerNum].handcard;
+
+    while(now != NULL){
+        
+        if(now == target){
+
+            //Redirect
+
+            if(now == player[playerNum].handcard) player[playerNum].handcard = now->next;
+            else pre->next = now->next;
+
+            //handcard
+
+            player[playerNum].num_of_handcard--;
+            
+            free(now);
+            return;
+
+        }
+
+        pre = now;
+        now = now->next;
+
+    }
+
+}
+
+void PUC_with_instruction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, char* afterError){
+
+    char c = 0;
+
+    while(1){
+
+        int32_t card_id = 0;
+        sCard* target = NULL;
+        scanf("%d", &card_id);
+
+        if(card_id == 0) return;
+
+        if((target = find_handcard(player, playerNum, card_id)) != NULL){
+            put_under_card(player, playerNum, tablecardIdx, target);
+            break;
+        }
+        else{
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            if(afterError != NULL) printf("%s\n", afterError);
+            error();
+        }
+
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("放牌成功！\n");
+    printf("請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
 
 }
 
@@ -214,16 +319,16 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
     
     }
 
-    //todo: Robot
-
     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
         
         table(player, num_of_player);
 
-        if(playerNum != 1){
+        //Bot
+
+        if(playerNum != HUMAN){
 
             printf("%d號玩家棄牌中...\n", playerNum);
-            sleep(3);
+            sleep(2);
 
             int32_t num_of_discard = player[playerNum].num_of_handcard - 4;
 
@@ -235,12 +340,14 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
                 pre = now;
                 now = now->next;
 
-                discard(player, playerNum, pre->num);
+                discard(player, playerNum, pre);
 
             }
 
             continue;
         }
+
+        //Human
 
         handcard(player, playerNum);
         printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
@@ -253,35 +360,14 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
             scanf("%d", &choice);
 
             switch(choice){
-                case 1:
-
-                    table(player, num_of_player);
-                    handcard(player, playerNum);
+                case 1:{
 
                     int32_t num_of_discard = player[playerNum].num_of_handcard - 4;
 
-                    printf("你需要棄掉%d張牌，請以空格為分隔符，輸入要棄掉的卡片編號（重複的牌亦須重複輸入）...\n", num_of_discard);
-                    for(int32_t i = 0;i < num_of_discard;i++){
-
-                        int32_t cardNum = 0;
-                        bool discardSuccess = true;
-
-                        scanf("%d", &cardNum);
-                        discardSuccess = discard(player, playerNum, cardNum);
-
-                        if(discardSuccess) breakFlag = true;
-                        else{
-                            breakFlag = false;
-                            table(player, num_of_player);
-                            handcard(player, playerNum);
-                            printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
-                            error();
-                            break;
-                        }
-
-                    }
+                    breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, "請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
 
                     break;
+                }
                 case 2:{
 
                     sCard* now = player[playerNum].handcard;
@@ -321,14 +407,14 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
 
 }
 
-char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardNUm, int32_t type){
+char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t type){
 
     char* blank = "　　　　　";
     static char buf[32] = "";
 
     if(type == TYPE_CARD){
         if(num_of_player >= playerNum){
-            if(player[playerNum].tablecard[tablecardNUm].name != NULL) return player[playerNum].tablecard[tablecardNUm].name;
+            if(player[playerNum].tablecard[tablecardIdx].name != NULL) return player[playerNum].tablecard[tablecardIdx].name;
             else return blank;
         }
         else return blank;
@@ -336,8 +422,8 @@ char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum,
 
     if(type == TYPE_SUBCARD){
         if(num_of_player >= playerNum){
-            if(player[playerNum].tablecard[tablecardNUm].subcard != 0){
-                snprintf(buf, 32, "蓋牌：　%d", player[playerNum].tablecard[tablecardNUm].subcard);
+            if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+                snprintf(buf, 32, "蓋牌：　%2d", player[playerNum].tablecard[tablecardIdx].subcard);
                 return buf;
             }
             else return blank;
@@ -353,10 +439,12 @@ int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_pla
 
     table(player, num_of_player);
 
-    if(playerNum != 1){
+    //Bot
+
+    if(playerNum != HUMAN){
 
         printf("輪到%d號玩家選擇職業中...\n", playerNum);
-        sleep(3);
+        sleep(2);
 
         profession_now = rand() % 5 + 1;
         while(profession_table[profession_now] == true) profession_now = rand() % 5 + 1;
@@ -364,6 +452,8 @@ int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_pla
 
         return profession_now;
     }
+
+    //Human
 
     printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
 
@@ -438,15 +528,193 @@ int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_pla
 
 }
 
+bool bot_decision(int32_t chance){
+
+    int32_t choice = rand() % 100 + 1;
+    if(choice <= chance) return true;
+    else return false;
+
+}
+
 void round_start(sPlayer* player, int32_t num_of_player, int32_t governor){
 
     table(player, num_of_player);
     printf("此輪的州長是%d號玩家\n", governor);
-    sleep(1);
+    sleep(3);
     
     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
 
-        //todo: card and decide whether i should put the function of care in another file
+        int32_t tablecardIdx = 0;
+
+        //Bot
+
+        if(playerNum != HUMAN){
+            table(player, num_of_player);    
+            printf("%d號玩家正在採取行動...\n\n", playerNum);
+            sleep(2);
+        }
+
+        //Human
+
+        if(tablecardIdx = find(CHAPEL)) chapel(player, num_of_player, playerNum, tablecardIdx);
+        if(tablecardIdx = find(OFFICE_BUILDING)) office_building(player, num_of_player, playerNum, tablecardIdx);
+        if(tablecardIdx = find(BANK) && !bank_used_table[playerNum]){
+            bank_used_table[playerNum] = true;
+            bank(player, num_of_player, playerNum, tablecardIdx);
+        } 
+    }
+
+    //check handcard
+
+    bool has_guard_room = false;
+    int32_t who_has_guard_room = 0;
+
+    //find whether there is any guard room
+
+    for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+        if(find(GUARD_ROOM)){
+            has_guard_room = true;
+            who_has_guard_room = playerNum;
+            break;
+        }
+    }
+
+    for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+
+        //Bot
+
+        if(playerNum != HUMAN){
+
+            if(find(TOWER)){
+
+                if(player[playerNum].num_of_handcard > 12){
+
+                    int32_t num_of_discard = player[playerNum].num_of_handcard - 12;
+                    for(int32_t i = 0;i < num_of_discard;i++) discard(player, playerNum, player[playerNum].handcard);
+                    printf("由於%d號玩家建造了"VIOLET"高塔"RESET"，因此%d號玩家棄掉了%d張牌，剩%d張牌\n", playerNum, playerNum, num_of_discard, player[playerNum].num_of_handcard);
+                    sleep(2);
+
+                }
+
+                continue;
+            }
+
+            if(has_guard_room){
+
+                if(player[playerNum].num_of_handcard > 6 && playerNum != who_has_guard_room){
+
+                    int32_t num_of_discard = player[playerNum].num_of_handcard - 6;
+                    for(int32_t i = 0;i < num_of_discard;i++) discard(player, playerNum, player[playerNum].handcard);
+                    printf("由於%d號玩家建造了"VIOLET"警衛室"RESET"，因此%d號玩家棄掉了%d張牌，剩%d張牌\n", who_has_guard_room, playerNum, num_of_discard, player[playerNum].num_of_handcard);
+                    sleep(2);
+
+                }
+                else if(player[playerNum].num_of_handcard > 7 && playerNum == who_has_guard_room){
+
+                    int32_t num_of_discard = player[playerNum].num_of_handcard - 7;
+                    for(int32_t i = 0;i < num_of_discard;i++) discard(player, playerNum, player[playerNum].handcard);
+                    printf("由於%d號玩家建造了"VIOLET"警衛室"RESET"，因此%d號玩家棄掉了%d張牌，剩%d張牌\n", who_has_guard_room, playerNum, num_of_discard, player[playerNum].num_of_handcard);
+                    sleep(2);
+
+                }
+
+            }
+            else{
+
+                if(player[playerNum].num_of_handcard > 7){
+
+                    int32_t num_of_discard = player[playerNum].num_of_handcard - 7;
+                    for(int32_t i = 0;i < num_of_discard;i++) discard(player, playerNum, player[playerNum].handcard);
+                    printf("%d號玩家棄掉了%d張牌，剩%d張牌\n", playerNum, num_of_discard, player[playerNum].num_of_handcard);
+                    sleep(2);
+
+                }
+
+            }
+
+            continue;
+
+        }
+
+        //Human
+
+        if(find(TOWER)){
+
+            if(player[playerNum].num_of_handcard > 12){
+
+                int32_t num_of_discard = player[playerNum].num_of_handcard - 12;
+                printf("由於你建造了"VIOLET"高塔"RESET"，因此你需要棄掉%d張牌\n", num_of_discard);
+
+                while(1){
+
+                    bool breakFlag = false;
+
+                    num_of_discard = player[playerNum].num_of_handcard - 12;
+                    breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, NULL);
+                    if(breakFlag) break;
+
+                }
+
+            }
+
+            continue;
+        }
+
+        if(has_guard_room){
+
+            if(player[playerNum].num_of_handcard > 6 && playerNum != who_has_guard_room){
+
+                int32_t num_of_discard = player[playerNum].num_of_handcard - 6;
+                printf("由於%d號玩家建造了"VIOLET"警衛室"RESET"，因此你需要棄掉%d張牌\n", who_has_guard_room, num_of_discard);
+
+                while(1){
+
+                    bool breakFlag = false;
+
+                    num_of_discard = player[playerNum].num_of_handcard - 6;
+                    breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, NULL);
+                    if(breakFlag) break;
+
+                }
+
+            }
+            else if(player[playerNum].num_of_handcard > 7 && playerNum == who_has_guard_room){
+
+                int32_t num_of_discard = player[playerNum].num_of_handcard - 7;
+                printf("由於你建造了"VIOLET"警衛室"RESET"，因此你需要棄掉%d張牌\n", num_of_discard);
+
+                while(1){
+
+                    bool breakFlag = false;
+
+                    num_of_discard = player[playerNum].num_of_handcard - 7;
+                    breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, NULL);
+                    if(breakFlag) break;
+
+                }
+
+            }
+
+        }
+        else{
+
+            if(player[playerNum].num_of_handcard > 7){
+
+                int32_t num_of_discard = player[playerNum].num_of_handcard - 7;
+
+                while(1){
+
+                    bool breakFlag = false;
+
+                    num_of_discard = player[playerNum].num_of_handcard - 7;
+                    breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, NULL);
+                    if(breakFlag) break;
+
+                }
+
+            }
+
+        }
 
     }
 
@@ -456,7 +724,6 @@ void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_pro
 
     table(player, num_of_player);
     printf("%d號玩家選擇了建築師，現在是建築階段\n\n", playerNum_profession);
-    sleep(1);
     printf("%d號玩家行動中...\n", playerNum_act);
     sleep(3);
 
@@ -466,7 +733,6 @@ void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_
 
     table(player, num_of_player);
     printf("%d號玩家選擇了議員，現在是議員階段\n\n", playerNum_profession);
-    sleep(1);
     printf("%d號玩家行動中...\n", playerNum_act);
     sleep(3);
 
@@ -476,7 +742,6 @@ void producer_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_pr
 
     table(player, num_of_player);
     printf("%d號玩家選擇了製造商，現在是生產階段\n\n", playerNum_profession);
-    sleep(1);
     printf("%d號玩家行動中...\n", playerNum_act);
     sleep(3);
 
@@ -496,7 +761,6 @@ void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_prof
 
     table(player, num_of_player);
     printf("%d號玩家選擇了貿易商，現在是交易階段\n\n", playerNum_profession);
-    sleep(1);
     printf("%d號玩家行動中...\n", playerNum_act);
     sleep(3);
 
@@ -510,15 +774,27 @@ void reset_profession_table(){
 
 void free_player(sPlayer* player, int32_t num_of_player){
 
-    for(int32_t i = 0;i <= num_of_player;i++){
+    for(int32_t playerNum = 0;playerNum <= num_of_player;playerNum++){
         
         sCard* pre = NULL;
-        sCard* now = player[i].handcard;
+        sCard* now = player[playerNum].handcard;
 
         while(now != NULL){
             pre = now;
             now = now->next;
             free(pre);
+        }
+
+        for(int32_t tablecardIdx = 1;tablecardIdx <= 12;tablecardIdx++){
+
+            now = player[playerNum].tablecard[tablecardIdx].next;
+
+            while(now != NULL){
+                pre = now;
+                now = now->next;
+                free(pre);
+            }
+
         }
 
     }

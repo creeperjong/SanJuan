@@ -152,7 +152,7 @@ void handcard(sPlayer* player, int32_t playerNum){
     sCard* now = player[playerNum].handcard;
     
     while(now != NULL){
-        printf("　　 (%02d) 　", now->num);
+        printf("　　 (%02d) 　", now->id);
         now = now->next;
     }
     printf("\n\n");

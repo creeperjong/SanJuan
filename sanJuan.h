@@ -73,17 +73,19 @@
 //others
 
 #define NEW_PAGE printf("%s", clear)
-#define CARD(x, y) print_tablecard(player, num_of_player, (x), (y), 1)
-#define SUBC(x, y) print_tablecard(player, num_of_player, (x), (y), 2)
+#define CARD(x, y) print_tablecard(player, num_of_player, (x), (y), TYPE_CARD)
+#define SUBC(x, y) print_tablecard(player, num_of_player, (x), (y), TYPE_SUBCARD)
+#define find(x) find_tablecard(player ,playerNum, x)
 #define INCONCLUSIVE -1
 #define TYPE_CARD 1
 #define TYPE_SUBCARD 2
+#define HUMAN 1
 
 //struct declaration
 
 typedef struct _sCard{
 
-    int32_t num;
+    int32_t id;
     char* name;
     char* description;
     int32_t cost;
@@ -118,14 +120,18 @@ void handcard(sPlayer* player, int32_t playerNum);
 
 void global_var_init();
 void player_init(sPlayer* player, int32_t num_of_player);
-void card_init(int32_t num, int32_t cardNum, char* name, char* description, int32_t cost, int32_t score);
+void card_init(int32_t num, int32_t id, char* name, char* description, int32_t cost, int32_t score);
 void deck_init();
 void shuffle(int32_t num_of_card);
 void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card);
-bool discard(sPlayer* player, int32_t playerNum, int32_t handcardNum);
+void discard(sPlayer* player, int32_t playerNum, sCard* target);
+bool discard_with_instuction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_discard, char* afterError);
+void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sCard* target);
+void PUC_with_instruction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, char* afterError);
 void distribute(sPlayer* player, int32_t num_of_player, int32_t governor);
-char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardNum, int32_t type);
+char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t type);
 int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player);
+bool bot_decision(int32_t chance);
 void round_start(sPlayer* player, int32_t num_of_player, int32_t governor);
 void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
@@ -134,3 +140,11 @@ void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_
 void reset_profession_table();
 void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void free_player(sPlayer* player, int32_t num_of_player);
+
+//card.c
+
+int32_t find_tablecard(sPlayer* player, int32_t playerNum, int32_t card_id);
+sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id);
+void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
+void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
+void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
