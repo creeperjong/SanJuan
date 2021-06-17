@@ -69,7 +69,8 @@ int main(){
     //Initialize
 
     sPlayer* player = NULL;
-    int32_t governor = rand() % num_of_player + 1;
+    //int32_t governor = rand() % num_of_player + 1;
+    int32_t governor = 1;   //Debug
 
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
@@ -89,7 +90,7 @@ int main(){
         for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
 
             int32_t playerNum_act = playerNum_profession;   //Initialize for the next layer loop
-            int32_t profession_choice = choose_profession(player, playerNum_profession, num_of_player);
+            int32_t profession_choice = choose_profession(player, num_of_player, playerNum_profession);
 
             for(int32_t j = 0;j < num_of_player;j++){   //Every player take an action
 

@@ -90,6 +90,7 @@ typedef struct _sCard{
     char* description;
     int32_t cost;
     int32_t score;
+    bool hasProduct;
     int32_t subcard;
     struct _sCard* next;
 
@@ -128,10 +129,14 @@ void discard(sPlayer* player, int32_t playerNum, sCard* target);
 bool discard_with_instuction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_discard, char* afterError);
 void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sCard* target);
 void PUC_with_instruction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, char* afterError);
+void discard_product(sPlayer* player, int32_t playerNum, int32_t tablecardIdx);
+void check_handcard_description(sPlayer* player, int32_t num_of_player, int32_t playerNum, char* afterEnd);
+void check_tablecard_description(sPlayer* player, int32_t num_of_player, int32_t playerNum, char* afterEnd);
 void distribute(sPlayer* player, int32_t num_of_player, int32_t governor);
 char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t type);
-int32_t choose_profession(sPlayer* player, int32_t playerNum, int32_t num_of_player);
+int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 bool bot_decision(int32_t chance);
+void build(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum);
 void round_start(sPlayer* player, int32_t num_of_player, int32_t governor);
 void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
@@ -140,11 +145,16 @@ void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_
 void reset_profession_table();
 void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void free_player(sPlayer* player, int32_t num_of_player);
+void free_card(sCard* card);
 
 //card.c
 
 int32_t find_tablecard(sPlayer* player, int32_t playerNum, int32_t card_id);
 sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id);
+void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
+void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t* fee);
+int32_t crane(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* target);
 void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
+void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
 void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
 void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
