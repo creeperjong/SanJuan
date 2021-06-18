@@ -3,7 +3,7 @@
 char* clear = "\e[H\e[2J\e[3J";
 
 int main(){
-
+    setvbuf(stdin, NULL, _IONBF, 0);
     srand(time(0));
 
     //Notice page
@@ -69,8 +69,8 @@ int main(){
     //Initialize
 
     sPlayer* player = NULL;
-    //int32_t governor = rand() % num_of_player + 1;
-    int32_t governor = 1;   //Debug
+    int32_t governor = rand() % num_of_player + 1;
+    //int32_t governor = 1;   //Debug
 
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 

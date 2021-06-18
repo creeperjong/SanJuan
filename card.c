@@ -28,7 +28,7 @@ sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id){
 void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
 
     if(target->id <= 5){ 
-        *(fee) = *(fee) - 1;
+        (*fee)--;
         if(playerNum == HUMAN) printf("由於你建造了"VIOLET"鐵匠舖"RESET"，因此你在建造工廠建築時少付一張牌\n");
     }
 
@@ -64,6 +64,12 @@ void poor_house(sPlayer* player, int32_t num_of_player, int32_t playerNum){
 
 }
 
+void archive(int32_t playerNum, int32_t* num_of_handcard_origin){
+    (*num_of_handcard_origin) = 0;
+    if(playerNum == HUMAN) printf("由於你建造了"VIOLET"檔案館"RESET"，因此你可以從抽取的牌或從手牌中棄牌\n");
+    else printf("%d號玩家使用"VIOLET"檔案館"RESET"的功能，從抽取的牌或從手牌中棄牌\n", playerNum);
+}
+
 void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t* fee){
 
     int32_t most_num_of_discard = 0;
@@ -80,12 +86,12 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
 
         if(num_of_discard == 0) return;
 
-        if(*(fee) - num_of_discard <= player[playerNum].num_of_handcard - 1 && player[playerNum].num_of_handcard > 1){
+        if((*fee) - num_of_discard <= player[playerNum].num_of_handcard - 1 && player[playerNum].num_of_handcard > 1){
             int32_t now_num_of_discard = 0;
             for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
                 if(player[playerNum].tablecard[tablecardIdx].hasProduct){
                     discard_product(player, playerNum, tablecardIdx);
-                    *(fee)--;
+                    (*fee)--;
                     now_num_of_discard++;
                     if(now_num_of_discard == num_of_discard) break;
                 }
@@ -112,14 +118,17 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
         if(num_of_discard > 0 && num_of_discard <= most_num_of_discard){
 
             table(player, num_of_player);
-            printf("請以空格為分隔符，輸入要棄貨的卡片編號（編號由左至右，由上至下為1-12，重複的牌亦須重複輸入）...\n");
+            handcard(player, playerNum);
+            printf("請以空格為分隔符，輸入要棄貨的卡片編號，你要棄掉%d份貨（編號由左至右，由上至下為1-12，重複的牌亦須重複輸入）...\n", num_of_discard);
 
             //check
 
             int32_t* discard_list = NULL;
             discard_list = (int32_t*)malloc(sizeof(int32_t) * num_of_discard);
+            for(int32_t i = 0;i < num_of_discard;i++) scanf("%d", &discard_list[i]);
+
             for(int32_t i = 0;i < num_of_discard;i++){
-                scanf("%d", &discard_list[i]);
+
                 int32_t tablecardIdx = discard_list[i];
 
                 if(!player[playerNum].tablecard[tablecardIdx].hasProduct || tablecardIdx < 1 || tablecardIdx > player[playerNum].num_of_tablecard){
@@ -138,7 +147,7 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
             for(int32_t i = 0;i < num_of_discard;i++){
                 int32_t tablecardIdx = discard_list[i];
                 discard_product(player, playerNum, tablecardIdx);
-                *(fee)--;
+                (*fee)--;
             }
 
             free(discard_list);
@@ -165,6 +174,35 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
     flush_buffer();
     c = getchar();
 
+
+}
+
+void well(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_product){
+
+    if(num_of_product >= 2){
+
+        if(playerNum != HUMAN){
+            draw(player, playerNum, 1);
+            printf("%d號玩家使用"VIOLET"水井"RESET"的功能，生產至少兩份貨物時抽一張牌\n", playerNum);
+            return;
+        }
+
+        char c = 0;
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("由於你建造了"VIOLET"水井"RESET"，因此你生產至少兩份貨物時，抽一張牌\n");
+
+        printf("抽牌中...\n");
+        sleep(3);
+        draw(player, playerNum, 1);
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請按Enter繼續...\n");
+        c = getchar();
+
+    }
 
 }
 
@@ -224,6 +262,14 @@ void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
 
 }
 
+void aquaduct(int32_t playerNum, int32_t* most_num_of_product){
+
+    (*most_num_of_product)++;
+    if(playerNum == HUMAN) printf("由於你建造了"VIOLET"下水道"RESET"，因此你可以多生產一份貨物\n");
+    else printf("%d號玩家使用"VIOLET"下水道"RESET"的功能，可以多生產一份貨物\n", playerNum);
+
+}
+
 void carpenter(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* target){
 
     if(target->id > 5){
@@ -255,10 +301,18 @@ void carpenter(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard*
 
 }
 
+void prefecture(int32_t playerNum, int32_t num_of_card, int32_t* num_of_discard){
+
+    (*num_of_discard) = num_of_card - 2;
+    if(playerNum == HUMAN) printf("由於你建造了"VIOLET"總督府"RESET"，因此你可以在抽牌時多保留一張牌\n");
+    else printf("%d號玩家使用"VIOLET"總督府"RESET"的功能，抽牌後多保留一張牌\n", playerNum);
+
+}
+
 void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
 
     if(target->id > 5){
-        *(fee) = *(fee) - 1;
+        (*fee)--;
         if(playerNum == HUMAN) printf("由於你建造了"VIOLET"採石場"RESET"，因此你在建造城市建築時少付一張牌\n");
     }
 
@@ -267,12 +321,19 @@ void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
 void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase){
 
     if(phase == BUILDER){
-        *(fee) -= 2;
+        (*fee) -= 2;
         if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你在建造任何建築時少付兩張牌\n");
     }
 
-    if(phase == COUNCILLOR) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你在議員階段可額外再抽五張牌，總計八張\n");
+    if(phase == COUNCILLOR){
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你在議員階段可額外再抽六張牌，總計八張\n");
+        else printf("%d號玩家使用"VIOLET"圖書館"RESET"的功能，額外再抽六張牌，總計八張\n", playerNum);
+    }
 
+    if(phase == PRODUCER){
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你可以多生產兩份貨物\n");
+        else printf("%d號玩家使用"VIOLET"圖書館"RESET"的功能，可以多生產兩份貨物\n", playerNum);
+    }
 }
 
 void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum){
@@ -439,9 +500,9 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
 
         int32_t* card_list = NULL;
         card_list = (int32_t*)malloc(sizeof(int32_t) * num_of_card);
-        for(int32_t i = 0;i < num_of_card;i++){
-            scanf("%d", &card_list[i]);
+        for(int32_t i = 0;i < num_of_card;i++) scanf("%d", &card_list[i]);
 
+        for(int32_t i = 0;i < num_of_card;i++){
             if(find_handcard(player, playerNum, card_list[i]) == NULL){
                 continueFlag = true;
                 table(player, num_of_player);
@@ -481,5 +542,51 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
     printf("請按Enter繼續...\n");
     flush_buffer();
     c = getchar();
+
+}
+
+void customs_office(sPlayer* player ,int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t phase){
+    
+    if(phase == COUNCILLOR){
+
+        if(playerNum != HUMAN){
+            if(bot_decision(90)){
+                printf("%d號玩家使用"VIOLET"海關"RESET"的功能，放一份貨物至海關\n", playerNum);
+                produce_product(player, playerNum, tablecardIdx);
+            }
+            return;
+        }
+
+        char choice = 0;
+        char c = 0;
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("由於你建造了"VIOLET"海關"RESET"，因此你可以放一份貨物至海關\n");
+        printf("是否在海關生產貨物？(y/n)\n");
+        
+        while(1){
+            
+            scanf("%c", &choice);
+
+            if(choice == 'y'){
+                produce_product(player, playerNum, tablecardIdx);
+                table(player, num_of_player);
+                printf("生產成功！請按Enter繼續...\n");
+                flush_buffer();
+                c = getchar();
+                return;
+            }
+            else if(choice == 'n') return;
+            else{
+                table(player, num_of_player);
+                handcard(player, playerNum);
+                printf("由於你建造了"VIOLET"海關"RESET"，因此你可以放一份貨物至海關\n");
+                printf("是否在海關生產貨物？(y/n)\n");
+                error();
+            }
+
+        }
+    }
 
 }

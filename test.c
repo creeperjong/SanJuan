@@ -2,20 +2,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <time.h>
-
-int32_t find(){
-
-    return 2;
-
-}
 
 int main(){
 
-    int32_t tablecardIdx = 0;
+    int32_t a = 5;
+    int32_t* ptr = &a;
 
-    if(tablecardIdx = find() && 1){
-        printf("%d\n", tablecardIdx);
-    }
-
+    (*ptr) -= 2;
+    printf("%d\n", a);
+    
 }

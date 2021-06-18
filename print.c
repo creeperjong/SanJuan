@@ -7,7 +7,8 @@ void error(){
 }
 
 void flush_buffer(){
-    setbuf(stdin, NULL);
+    char c = 0;
+    while((c = getchar()) != '\n' && c != EOF);
 }
 
 void notice(){
@@ -46,7 +47,6 @@ void notice(){
     printf("║　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　║\n");
     printf("╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝\n");
     printf("請按Enter繼續...");
-    flush_buffer();
     c = getchar();
 
 }
@@ -184,3 +184,41 @@ void handcard(sPlayer* player, int32_t playerNum){
 
 }
 
+void handcard_councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* start){
+
+    sCard* now = start;
+
+    printf("可棄手牌：　　");
+    
+    while(now != NULL){
+        printf("　　 (%02d) 　", now->id);
+        now = now->next;
+    }
+    printf("\n\n");
+
+    now = start;
+    printf("\t名稱：");
+    while(now != NULL){
+        printf("　%s", now->name);
+        now = now->next;
+    }
+    printf("\n");
+
+    now = start;
+    printf("\t費用：");
+    while(now != NULL){
+        printf("　　　%2d　　", now->cost);
+        now = now->next;
+    }
+    printf("\n");
+
+    now = start;
+    printf("\t得分：");
+    while(now != NULL){
+        if(now->score != -1) printf("　　　%2d　　", now->score);
+        else printf("　　　%s　　", " ?");
+        now = now->next;
+    }
+    printf("\n\n");
+
+}
