@@ -38,7 +38,7 @@
 #define SMITHY 6
 #define GOLDMINE 7
 #define ARCHIVE 8
-#define POOR_HOUSE 9
+#define POOR_HOUSE 1
 #define MARKET_STAND 10
 #define BLACK_MARKET 11
 #define TRADING_POST 12
@@ -47,7 +47,7 @@
 #define CHAPEL 15
 #define TOWER 16
 #define AQUADUCT 17
-#define CARPENTER 18
+#define CARPENTER 1
 #define PREFECTURE 19
 #define MARKET_HALL 20
 #define QUARRY 21
@@ -62,7 +62,7 @@
 #define GUARD_ROOM 30
 #define OFFICE_BUILDING 31
 #define COTTAGE 32
-#define TAVERN 33
+#define TAVERN 1
 #define PARK 34
 #define BANK 35
 #define CUSTOMS_OFFICE 36
@@ -126,7 +126,7 @@ void deck_init();
 void shuffle(int32_t num_of_card);
 void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card);
 void discard(sPlayer* player, int32_t playerNum, sCard* target);
-bool discard_with_instuction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_discard, char* afterError);
+bool discard_with_instruction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_discard, char* afterError);
 void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sCard* target);
 void PUC_with_instruction(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, char* afterError);
 void discard_product(sPlayer* player, int32_t playerNum, int32_t tablecardIdx);
@@ -137,6 +137,7 @@ char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum,
 int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 bool bot_decision(int32_t chance);
 void build(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum);
+void concillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum);
 void round_start(sPlayer* player, int32_t num_of_player, int32_t governor);
 void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
@@ -152,9 +153,13 @@ void free_card(sCard* card);
 int32_t find_tablecard(sPlayer* player, int32_t playerNum, int32_t card_id);
 sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id);
 void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
+void poor_house(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t* fee);
 int32_t crane(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* target);
 void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
+void carpenter(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* target);
 void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
-void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
+void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase);
+void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum);
+void tavern(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);

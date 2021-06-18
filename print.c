@@ -114,7 +114,7 @@ void table(sPlayer* player, int32_t num_of_player){
 
     NEW_PAGE;
     printf("╔══════════════════════════════════════════════════╦══════════════════════════════════════════════════╗\n");
-    printf("║ＰＬＡＹＥＲ０１（ＹＯＵ）　　　　　ＶＰｓ： %03d　║ＰＬＡＹＥＲ０２　　　　　　　　　　ＶＰｓ： %03d　║\n", player[1].vp, player[2].vp);
+    printf("║ＰＬＡＹＥＲ０１（ＹＯＵ）　　　　　ＶＰｓ： %03d　║ＰＬＡＹＥＲ０２　　　手牌：%2d　　　ＶＰｓ： %03d　║\n", player[1].vp, player[2].num_of_handcard, player[2].vp);
     printf("║　　　　　　　　　　　　　　　　　　　　　　　　　║　　　　　　　　　　　　　　　　　　　　　　　　　║\n");
     printf("║　%s　%s　%s　%s　║　%s　%s　%s　%s　║\n", CARD(1, 1), CARD(1, 2), CARD(1, 3), CARD(1, 4), CARD(2, 1), CARD(2, 2), CARD(2, 3), CARD(2, 4));
     printf("║　%s　%s　%s　%s　║　%s　%s　%s　%s　║\n", SUBC(1, 1), SUBC(1, 2), SUBC(1, 3), SUBC(1, 4), SUBC(2, 1), SUBC(2, 2), SUBC(2, 3), SUBC(2, 4));
@@ -126,7 +126,7 @@ void table(sPlayer* player, int32_t num_of_player){
     printf("║　%s　%s　%s　%s　║　%s　%s　%s　%s　║\n", SUBC(1, 9), SUBC(1, 10), SUBC(1, 11), SUBC(1, 12), SUBC(2, 9), SUBC(2, 10), SUBC(2, 11), SUBC(2, 12));
     printf("║　　　　　　　　　　　　　　　　　　　　　　　　　║　　　　　　　　　　　　　　　　　　　　　　　　　║\n");
     printf("╠══════════════════════════════════════════════════╬══════════════════════════════════════════════════╣\n");
-    printf("║ＰＬＡＹＥＲ０３　　　　　　　　　　ＶＰｓ： %03d　║ＰＬＡＹＥＲ０４　　　　　　　　　　ＶＰｓ： %03d　║\n", (num_of_player >= 3) ? player[3].vp : 0, (num_of_player >= 4) ? player[4].vp : 0);
+    printf("║ＰＬＡＹＥＲ０３　　　手牌：%2d　　　ＶＰｓ： %03d　║ＰＬＡＹＥＲ０４　　　手牌：%2d　　　ＶＰｓ： %03d　║\n", player[3].num_of_handcard, (num_of_player >= 3) ? player[3].vp : 0, player[4].num_of_handcard, (num_of_player >= 4) ? player[4].vp : 0);
     printf("║　　　　　　　　　　　　　　　　　　　　　　　　　║　　　　　　　　　　　　　　　　　　　　　　　　　║\n");
     printf("║　%s　%s　%s　%s　║　%s　%s　%s　%s　║\n", CARD(3, 1), CARD(3, 2), CARD(3, 3), CARD(3, 4), CARD(4, 1), CARD(4, 2), CARD(4, 3), CARD(4, 4));
     printf("║　%s　%s　%s　%s　║　%s　%s　%s　%s　║\n", SUBC(3, 1), SUBC(3, 2), SUBC(3, 3), SUBC(3, 4), SUBC(4, 1), SUBC(4, 2), SUBC(4, 3), SUBC(4, 4));

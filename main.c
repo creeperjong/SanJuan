@@ -97,6 +97,11 @@ int main(){
                 switch(profession_choice){
                     case BUILDER:
                         builder_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        if(j == num_of_player - 1){
+                            for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+                                if(find(TAVERN)) tavern(player, num_of_player, playerNum);
+                            }
+                        }
                         break;
                     case COUNCILLOR:
                         councillor_phase(player, num_of_player, playerNum_profession, playerNum_act);

@@ -4,22 +4,18 @@
 #include <stdbool.h>
 #include <time.h>
 
-bool bot_decision(int32_t chance){
+int32_t find(){
 
-    
-    int32_t choice = rand() % 100 + 1;
-    if(choice <= chance) return true;
-    else return false;
+    return 2;
 
 }
 
 int main(){
 
-    if(!4){
-        printf("failed\n");
-    }
-    else{
-        printf("Success\n");
+    int32_t tablecardIdx = 0;
+
+    if(tablecardIdx = find() && 1){
+        printf("%d\n", tablecardIdx);
     }
 
 }

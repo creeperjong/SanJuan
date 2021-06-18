@@ -27,9 +27,39 @@ sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id){
 
 void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
 
-    if(target->id <= 5){
-        *(fee)--;
-        printf("由於你建造了"VIOLET"鐵匠舖"RESET"，因此你在建造工廠建築時少付一張牌\n");
+    if(target->id <= 5){ 
+        *(fee) = *(fee) - 1;
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"鐵匠舖"RESET"，因此你在建造工廠建築時少付一張牌\n");
+    }
+
+}
+
+void poor_house(sPlayer* player, int32_t num_of_player, int32_t playerNum){
+
+    if(player[playerNum].num_of_handcard <= 1){
+
+        if(playerNum != HUMAN){
+            draw(player, playerNum, 1);
+            printf("%d號玩家使用"VIOLET"濟貧院"RESET"的功能，在建造完後剩零或一張手牌時抽一張牌\n", playerNum);
+            return;
+        }        
+        
+        char c = 0;
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("由於你建造了"VIOLET"濟貧院"RESET"，因此你在建造完後如果只剩零或一張手牌，則抽一張牌\n");
+
+        printf("抽牌中...\n");
+        sleep(3);
+        draw(player, playerNum, 1);
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請按Enter繼續...\n");
+        flush_buffer();
+        c = getchar();
+
     }
 
 }
@@ -44,6 +74,28 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
     }
     if(most_num_of_discard > 2) most_num_of_discard = 2;
 
+    if(playerNum != HUMAN){
+
+        num_of_discard = rand() % (most_num_of_discard + 1);
+
+        if(num_of_discard == 0) return;
+
+        if(*(fee) - num_of_discard <= player[playerNum].num_of_handcard - 1 && player[playerNum].num_of_handcard > 1){
+            int32_t now_num_of_discard = 0;
+            for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+                if(player[playerNum].tablecard[tablecardIdx].hasProduct){
+                    discard_product(player, playerNum, tablecardIdx);
+                    *(fee)--;
+                    now_num_of_discard++;
+                    if(now_num_of_discard == num_of_discard) break;
+                }
+            }
+        }
+
+        return;
+
+    }
+
     table(player, num_of_player);
     handcard(player, playerNum);
     printf("由於你建造了"VIOLET"黑市"RESET"，因此你可以棄掉任何一份或兩份貨物，各別降低建築費用一張牌或兩張牌\n");
@@ -51,7 +103,7 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
     
     while(1){
 
-        bool breakFlag = false;
+        bool continueFlag = false;
 
         scanf("%d", &num_of_discard);
 
@@ -59,20 +111,21 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
 
         if(num_of_discard > 0 && num_of_discard <= most_num_of_discard){
 
+            table(player, num_of_player);
             printf("請以空格為分隔符，輸入要棄貨的卡片編號（編號由左至右，由上至下為1-12，重複的牌亦須重複輸入）...\n");
 
+            //check
+
+            int32_t* discard_list = NULL;
+            discard_list = (int32_t*)malloc(sizeof(int32_t) * num_of_discard);
             for(int32_t i = 0;i < num_of_discard;i++){
+                scanf("%d", &discard_list[i]);
+                int32_t tablecardIdx = discard_list[i];
 
-                int32_t tablecardIdx = 0;
-                scanf("%d", &tablecardIdx);
-
-                if(player[playerNum].tablecard[tablecardIdx].hasProduct && tablecardIdx >= 1 && tablecardIdx <= player[playerNum].num_of_tablecard){
-                    breakFlag = true;
-                    discard_product(player, playerNum, tablecardIdx);
-                    *(fee)--;
-                }
-                else{
-                    breakFlag = false;
+                if(!player[playerNum].tablecard[tablecardIdx].hasProduct || tablecardIdx < 1 || tablecardIdx > player[playerNum].num_of_tablecard){
+                    continueFlag = true;
+                    table(player, num_of_player);
+                    handcard(player , playerNum);
                     printf("由於你建造了"VIOLET"黑市"RESET"，因此你可以棄掉任何一份或兩份貨物，各別降低建築費用一張牌或兩張牌\n");
                     printf("請輸入棄貨數量，若不棄貨則輸入0（你最多可以棄%d份貨）...\n", most_num_of_discard);
                     error();
@@ -80,18 +133,38 @@ void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int
                 }
             }
 
+            if(continueFlag) continue;
+
+            for(int32_t i = 0;i < num_of_discard;i++){
+                int32_t tablecardIdx = discard_list[i];
+                discard_product(player, playerNum, tablecardIdx);
+                *(fee)--;
+            }
+
+            free(discard_list);
+            break;
+
         }
         else{
 
+            table(player, num_of_player);
+            handcard(player , playerNum);
             printf("由於你建造了"VIOLET"黑市"RESET"，因此你可以棄掉任何一份或兩份貨物，各別降低建築費用一張牌或兩張牌\n");
             printf("請輸入棄貨數量，若不棄貨則輸入0（你最多可以棄%d份貨）...\n", most_num_of_discard);
             error();         
 
         }
 
-        if(breakFlag) break;
-
     }
+
+    char c = 0;
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
+
 
 }
 
@@ -131,8 +204,8 @@ void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
         if(bot_decision(60)){
 
             put_under_card(player, playerNum, tablecardIdx, player[playerNum].handcard);
-            printf("%d號玩家使用"VIOLET"教堂"RESET"的功能，將一張牌放至"VIOLET"教堂"RESET"下\n", playerNum);
             player[playerNum].vp++;
+            printf("%d號玩家使用"VIOLET"教堂"RESET"的功能，將一張牌放至"VIOLET"教堂"RESET"下\n", playerNum);
             sleep(2);
 
         }
@@ -151,16 +224,58 @@ void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
 
 }
 
-void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
+void carpenter(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* target){
 
     if(target->id > 5){
-        *(fee)--;
-        printf("由於你建造了"VIOLET"採石場"RESET"，因此你在建造工廠建築時少付一張牌\n");
+
+        if(playerNum != HUMAN){
+            draw(player, playerNum, 1);
+            printf("%d號玩家使用"VIOLET"木工坊"RESET"的功能，建造城市建築抽一張牌\n", playerNum);
+            return;
+        }
+
+
+        char c = 0;
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("由於你建造了"VIOLET"木工坊"RESET"，因此你建造城市建築抽一張牌\n");
+
+        printf("抽牌中...\n");
+        sleep(3);
+        draw(player, playerNum, 1);
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請按Enter繼續...\n");
+        flush_buffer();
+        c = getchar();
+
     }
 
 }
 
-void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx){
+void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
+
+    if(target->id > 5){
+        *(fee) = *(fee) - 1;
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"採石場"RESET"，因此你在建造城市建築時少付一張牌\n");
+    }
+
+}
+
+void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase){
+
+    if(phase == BUILDER){
+        *(fee) -= 2;
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你在建造任何建築時少付兩張牌\n");
+    }
+
+    if(phase == COUNCILLOR) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你在議員階段可額外再抽五張牌，總計八張\n");
+
+}
+
+void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum){
 
     //Bot
 
@@ -194,7 +309,7 @@ void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, 
         scanf("%d", &num_of_discard);
 
         if(num_of_discard == 0) return;
-        if(num_of_discard < 0 || num_of_discard > 2){
+        if(num_of_discard < 0 || num_of_discard > 2 || num_of_discard > player[playerNum].num_of_handcard){
 
             table(player, num_of_player);
             handcard(player, playerNum);
@@ -205,7 +320,7 @@ void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, 
 
         }
 
-        breakFlag = discard_with_instuction(player, num_of_player, playerNum, num_of_discard, "請輸入棄牌數量（0-2)...");
+        breakFlag = discard_with_instruction(player, num_of_player, playerNum, num_of_discard, "請輸入棄牌數量（0-2)...");
 
         if(breakFlag) break;
 
@@ -220,6 +335,54 @@ void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum, 
     printf("請按Enter繼續...\n");
     flush_buffer();
     c = getchar();
+
+}
+
+void tavern(sPlayer* player, int32_t num_of_player, int32_t playerNum){
+
+    int32_t min = INT32_MAX;
+    int32_t minNum = 0;
+
+    for(int32_t i = 1;i <= num_of_player;i++){
+
+        if(min > player[i].num_of_tablecard){
+            min = player[i].num_of_tablecard;
+            minNum = i;
+        }
+
+    }
+
+    for(int32_t i = 1;i <= num_of_player;i++){
+        if(min == player[i].num_of_tablecard && i != minNum) return;
+    }
+
+    if(minNum == playerNum){
+
+        if(playerNum != HUMAN){
+            table(player, num_of_player);
+            printf("%d號玩家使用"VIOLET"酒館"RESET"的功能，因建築物最少而抽一張牌\n", playerNum);
+            sleep(3);
+            draw(player, playerNum, 1);
+            return;
+        }        
+        
+        char c = 0;
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("由於你建造了"VIOLET"酒館"RESET"，因此若你的建築物數量最少，則抽一張牌\n");
+
+        printf("抽牌中...\n");
+        sleep(3);
+        draw(player, playerNum, 1);
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請按Enter繼續...\n");
+        flush_buffer();
+        c = getchar();
+
+    }
 
 }
 
@@ -254,7 +417,7 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
 
     while(1){
 
-        bool breakFlag = false;
+        bool continueFlag = false;
 
         scanf("%d", &num_of_card);
         if(num_of_card == 0) return;
@@ -271,31 +434,46 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
         handcard(player, playerNum);
 
         printf("請以空格為分隔符，輸入要放入的卡片編號（重複的牌亦須重複輸入）...\n");
+
+        //check
+
+        int32_t* card_list = NULL;
+        card_list = (int32_t*)malloc(sizeof(int32_t) * num_of_card);
         for(int32_t i = 0;i < num_of_card;i++){
+            scanf("%d", &card_list[i]);
 
-            int32_t card_id = 0;
-            sCard* target = NULL;
-            scanf("%d", &card_id);
-
-            if((target = find_handcard(player, playerNum, card_id)) != NULL){
-                breakFlag = true;
-                put_under_card(player, playerNum, tablecardIdx, target);
-                player[playerNum].vp++;
-            }
-            else{
-                breakFlag = false;
+            if(find_handcard(player, playerNum, card_list[i]) == NULL){
+                continueFlag = true;
                 table(player, num_of_player);
                 handcard(player, playerNum);
+                printf("由於你建造了"VIOLET"銀行"RESET"，因此你在一場遊戲中有一次機會將任意張數的手牌放至銀行下（在遊戲結束時每張值一分）\n");
                 printf("請輸入放牌數量，若不放牌則輸入0...\n");
                 error();
-                break;
+            }
+        }
+
+        if(continueFlag) continue;
+
+        //card
+
+        for(int32_t i = 0;i < num_of_card;i++){
+
+            sCard* target = NULL;
+            int32_t card_id = card_list[i];
+
+            if((target = find_handcard(player, playerNum, card_id)) != NULL){
+                put_under_card(player, playerNum, tablecardIdx, target);
+                player[playerNum].vp++;
             }
 
         }
 
-        if(breakFlag) break;
+        free(card_list);
+
+        break;
 
     }
+
 
     table(player, num_of_player);
     handcard(player, playerNum);
