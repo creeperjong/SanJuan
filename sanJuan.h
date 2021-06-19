@@ -44,7 +44,7 @@
 #define TRADING_POST 12
 #define WELL 13
 #define CRANE 14
-#define CHAPEL 15
+#define CHAPEL 1
 #define TOWER 16
 #define AQUADUCT 17
 #define CARPENTER 18
@@ -76,7 +76,7 @@
 #define CARD(x, y) print_tablecard(player, num_of_player, (x), (y), TYPE_CARD)
 #define SUBC(x, y) print_tablecard(player, num_of_player, (x), (y), TYPE_SUBCARD)
 #define find(x) find_tablecard(player ,playerNum, x)
-#define INCONCLUSIVE -1
+#define INCONCLUSIVE 0
 #define TYPE_CARD 1
 #define TYPE_SUBCARD 2
 #define HUMAN 1
@@ -117,6 +117,7 @@ void choose_player();
 void table(sPlayer* player, int32_t num_of_player);
 void handcard(sPlayer* player, int32_t playerNum);
 void handcard_part(sPlayer* player, int32_t playerNum, sCard* start);
+void result(sPlayer* player, int32_t num_of_player);
 
 //sanJuan.c
 
@@ -149,8 +150,9 @@ void builder_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_pro
 void councillor_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void producer_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
 void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
-void reset_profession_table();
 void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act);
+void reset_profession_table();
+bool game_end(sPlayer* player, int32_t num_of_player);
 void free_player(sPlayer* player, int32_t num_of_player);
 void free_card(sCard* card);
 
@@ -174,6 +176,10 @@ void prefecture(int32_t playerNum, int32_t num_of_card, int32_t* num_of_discard)
 void market_hall(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t num_of_product);
 void quarry(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
 void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase);
+void guild_hall(sPlayer* player, int32_t playerNum);
+void city_hall(sPlayer* player, int32_t playerNum);
+void triumphal_arch(sPlayer* player, int32_t playerNum);
+void palace(sPlayer* player, int32_t playerNum);
 void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void cottage(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void tavern(sPlayer* player, int32_t num_of_player, int32_t playerNum);
@@ -181,3 +187,4 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
 void customs_office(sPlayer* player ,int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
 void harbor(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
 void goldsmith(sPlayer* player, int32_t num_of_player, int32_t playerNum);
+void residence(sPlayer* player, int32_t playerNum);

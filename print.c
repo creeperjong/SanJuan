@@ -176,7 +176,7 @@ void handcard(sPlayer* player, int32_t playerNum){
     now = player[playerNum].handcard;
     printf("\t得分：");
     while(now != NULL){
-        if(now->score != -1) printf("　　　%2d　　", now->score);
+        if(now->score != 0) printf("　　　%2d　　", now->score);
         else printf("　　　%s　　", " ?");
         now = now->next;
     }
@@ -215,10 +215,45 @@ void handcard_part(sPlayer* player, int32_t playerNum, sCard* start){
     now = start;
     printf("\t得分：");
     while(now != NULL){
-        if(now->score != -1) printf("　　　%2d　　", now->score);
+        if(now->score != 0) printf("　　　%2d　　", now->score);
         else printf("　　　%s　　", " ?");
         now = now->next;
     }
     printf("\n\n");
+
+}
+
+void result(sPlayer* player, int32_t num_of_player){
+
+    bool record[5] = {0};
+
+    table(player, num_of_player);
+    printf("════════════════════════════════════════════════遊戲結束════════════════════════════════════════════════\n");
+    printf("排名：\n");
+
+    for(int32_t i = 1;i <= num_of_player;i++){
+
+        int32_t max = INT32_MIN;
+        int32_t maxNum = 0;
+
+        for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+            if(record[playerNum]) continue;
+            if(max < player[playerNum].vp){
+                max = player[playerNum].vp;
+                maxNum = playerNum;
+            }
+        }
+
+        record[maxNum] = true;
+
+        if(maxNum == 1) printf("\t第%d名 → 你 　　　vp: %d\n", i, max);
+        else printf("\t第%d名 → %d號玩家　vp: %d\n", i, maxNum, max);
+
+    }
+    
+    char c = 0;
+    printf("\n請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
 
 }

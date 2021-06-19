@@ -98,8 +98,8 @@ void deck_init(){
     card_init(3, 23, VIOLET"　雕　像　"RESET, "紀念碑 → 無特殊功能。", 3, 3);
     card_init(3, 24, VIOLET"勝利紀念柱"RESET, "紀念碑 → 無特殊功能。", 4, 4);
     card_init(3, 25, VIOLET"　英雄像　"RESET, "紀念碑 → 無特殊功能。", 5, 5);
-    card_init(2, 26, VIOLET"　工　會　"RESET, "遊戲結束 → 你的每種工廠建築額外得一分，且每種工廠建築再額外得一分。", 6, INCONCLUSIVE);
-    card_init(2, 27, VIOLET"　市政廳　"RESET, "遊戲結束 → 你的每種城市建築額外得一分（包括此張卡牌）。", 6, INCONCLUSIVE);
+    card_init(2, 26, VIOLET"　工　會　"RESET, "遊戲結束 → 你的每棟工廠建築額外得一分，且每種工廠建築再額外得一分。", 6, INCONCLUSIVE);
+    card_init(2, 27, VIOLET"　市政廳　"RESET, "遊戲結束 → 你的每棟城市建築額外得一分（包括此張卡牌）。", 6, INCONCLUSIVE);
     card_init(2, 28, VIOLET"　凱旋門　"RESET, "遊戲結束 → 若你有１／２／３座紀念碑便額外獲得４／６／８分。", 6, INCONCLUSIVE);
     card_init(2, 29, VIOLET"　宮　殿　"RESET, "遊戲結束 → 你可額外獲得總分四分之一的分數（採無條件捨去）。", 6, INCONCLUSIVE);
     card_init(3, 30, VIOLET"　警衛室　"RESET, "回合開始 → 所有沒有警衛室的玩家手牌上限減少至六張（擁有高塔的玩家上限為十二張）。", 1, 1);
@@ -216,7 +216,26 @@ bool discard_with_instruction(sPlayer* player, int32_t num_of_player, int32_t pl
 
     table(player, num_of_player);
     handcard(player, playerNum);
+    printf("請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
 
+    while(1){
+
+        int32_t choice = 0;
+        scanf("%d", &choice);
+
+        if(choice == 1) break;
+        if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice < 1 || choice > 3){
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+            error();
+        }
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
     printf("你需要棄掉%d張牌，請以空格為分隔符，輸入要棄掉的卡片編號（重複的牌亦須重複輸入）...\n", num_of_discard);
     
     //check
@@ -265,6 +284,14 @@ void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sC
 
     now = (sCard*)malloc(sizeof(sCard));
     memcpy(now, target, sizeof(sCard));
+
+    //Redirect
+
+    if(player[playerNum].tablecard[tablecardIdx].subcard != 0) pre->next = now;
+    else player[playerNum].tablecard[tablecardIdx].next = now;
+
+    //others
+
     player[playerNum].tablecard[tablecardIdx].subcard++;
 
     //handcard
@@ -496,41 +523,18 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
 
         //Human
 
-        handcard(player, playerNum);
-        printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
-
         while(1){
             
             bool breakFlag = false;
-            int32_t choice = 0;
-
-            scanf("%d", &choice);
-
-            switch(choice){
-                case 1:{
-
-                    int32_t num_of_discard = player[playerNum].num_of_handcard - 4;
-
-                    breakFlag = discard_with_instruction(player, num_of_player, playerNum, num_of_discard, "請選擇動作（1:棄牌 2:查看卡片敘述）...");
-
-                    break;
-                }
-                case 2:{
-
-                    check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:棄牌 2:查看卡片敘述）...");
-
-                    break;
-                }
-                default:
-
-                    table(player, num_of_player);
-                    handcard(player, playerNum);
-                    printf("請選擇動作（1:棄牌 2:查看卡片敘述）...\n");
-                    error();
-                    break;
-            }
-
+            int32_t num_of_discard = player[playerNum].num_of_handcard - 4;
+            breakFlag = discard_with_instruction(player, num_of_player, playerNum, num_of_discard, NULL);
             if(breakFlag) break;
+            else{
+                char c = 0;
+                printf("請按Enter繼續...\n");
+                flush_buffer();
+                c = getchar();
+            }
 
         }
 
@@ -620,6 +624,7 @@ int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t player
                 else{
                     breakFlag = false;
                     table(player, num_of_player);
+                    handcard(player, playerNum);
                     printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
                     error();
                 }
@@ -641,6 +646,7 @@ int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t player
                 flush_buffer();
                 c = getchar();
                 table(player, num_of_player);
+                handcard(player, playerNum);
                 printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
 
                 break;
@@ -648,6 +654,7 @@ int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t player
             default:
 
                 table(player, num_of_player);
+                handcard(player, playerNum);
                 printf("請選擇動作（1:選擇職業 2:查看職業敘述）...\n");
                 error();
                 break;
@@ -841,19 +848,21 @@ void build(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession,
 
             //discard as fee
 
-            while(1){
+            if(fee != 0){
+                while(1){
 
-                bool breakFlag = false;
+                    bool breakFlag = false;
 
-                breakFlag = discard_with_instruction(player, num_of_player, playerNum, fee, NULL);
-                if(breakFlag) break;
-                else{
-                    char c = 0;
-                    printf("請按Enter繼續...\n");
-                    flush_buffer();
-                    c = getchar();
+                    breakFlag = discard_with_instruction(player, num_of_player, playerNum, fee, NULL);
+                    if(breakFlag) break;
+                    else{
+                        char c = 0;
+                        printf("請按Enter繼續...\n");
+                        flush_buffer();
+                        c = getchar();
+                    }
+
                 }
-
             }
 
             //Build
@@ -1577,7 +1586,7 @@ void trade(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession,
 
             table(player, num_of_player);
             handcard(player , playerNum);
-            printf("請輸入生產數量，若不生產則輸入0（你最多可以賣%d份貨）...\n", most_num_of_product);
+            printf("請輸入銷售數量，若不銷售則輸入0（你最多可以賣%d份貨）...\n", most_num_of_product);
             error();         
 
         }
@@ -2023,6 +2032,16 @@ void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_prof
 void reset_profession_table(){
 
     memset(profession_table, 0, sizeof(int32_t) * 6);
+
+}
+
+bool game_end(sPlayer* player, int32_t num_of_player){
+
+    for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+        if(player[playerNum].num_of_tablecard == 12) return true;
+    }
+
+    return false;
 
 }
 

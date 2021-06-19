@@ -623,6 +623,76 @@ void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase){
     }
 }
 
+void guild_hall(sPlayer* player, int32_t playerNum){
+
+    int32_t sum = 0;
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+        if(player[playerNum].tablecard[tablecardIdx].id <= 5){
+            player[playerNum].vp++;
+            sum++;
+        }
+    }
+
+    bool record[6] = {0};
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+        if(player[playerNum].tablecard[tablecardIdx].id <= 5){
+            int32_t id = player[playerNum].tablecard[tablecardIdx].id;
+            if(!record[id]){
+                player[playerNum].vp++;
+                sum++;
+                record[id] = true;
+            }
+        }
+    }
+
+    printf("%d號玩家使用"VIOLET"工會"RESET"的功能，額外得了%d分\n", playerNum, sum);
+
+}
+
+void city_hall(sPlayer* player, int32_t playerNum){
+    
+    int32_t sum = 0;
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+        if(player[playerNum].tablecard[tablecardIdx].id > 5) player[playerNum].vp++;
+        sum++;
+    }
+
+    printf("%d號玩家使用"VIOLET"市政廳"RESET"的功能，額外得了%d分\n", playerNum, sum);
+
+}
+
+void triumphal_arch(sPlayer* player, int32_t playerNum){
+    
+    int32_t cnt = 0;
+    int32_t sum = 0;
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+        if(player[playerNum].tablecard[tablecardIdx].id >= 22 && player[playerNum].tablecard[tablecardIdx].id <= 24){
+            cnt++;
+        }
+    }
+
+    if(cnt == 1) sum = 4;
+    if(cnt == 2) sum = 6;
+    if(cnt >= 3) sum = 8;
+    player[playerNum].vp += sum;
+    
+    printf("%d號玩家使用"VIOLET"凱旋門"RESET"的功能，額外得了%d分\n", playerNum, sum);
+}
+
+void palace(sPlayer* player, int32_t playerNum){
+    
+    int32_t sum = 0;
+    sum = player[playerNum].vp / 4;
+    player[playerNum].vp += sum;
+
+    printf("%d號玩家使用"VIOLET"宮殿"RESET"的功能，額外得了%d分\n", playerNum, sum);
+
+}
+
 void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum){
 
     //Bot
@@ -1079,5 +1149,74 @@ void goldsmith(sPlayer* player, int32_t num_of_player, int32_t playerNum){
 
     printf("\n請按Enter繼續...\n");
     c = getchar();
+
+}
+
+void residence(sPlayer* player, int32_t playerNum){
+    
+    int32_t record[41] = {0};
+    int32_t cost_table[41] = {0};
+    int32_t num_of_tablecard = player[playerNum].num_of_tablecard;
+    int32_t groupCnt = 0;
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= num_of_tablecard;tablecardIdx++){
+        int32_t id = player[playerNum].tablecard[tablecardIdx].id;
+        record[id]++;
+        cost_table[id] = player[playerNum].tablecard[tablecardIdx].cost;
+    }
+    
+    for(int32_t cost = 1;cost <= 7;cost++){
+
+        int32_t cnt = 0;
+        int32_t check[3] = {0};
+
+        while(1){
+
+            bool isEmpty = true;
+            bool isDuplicate = false;
+
+            for(int32_t id = 1;id <= 40;id++){
+                if(cost_table[id] == cost && record[id] != 0){
+                    isEmpty = false;
+                    check[cnt++] = id;
+                    record[id]--;
+                    if(cnt == 3){
+
+                        //duplicate check
+
+                        for(int32_t i = 0;i < 3;i++){
+                            for(int32_t j = i + 1;j< 3;j++){
+                                if(check[i] == check[j]){
+                                    isDuplicate = true;
+                                    break;
+                                }
+                            }
+                            if(isDuplicate) break;
+                        }
+
+                        cnt = 0;
+                        memset(check, 0, sizeof(check));
+
+                        if(isDuplicate) break;
+                        else groupCnt++;
+                    }
+                }
+            }
+
+            if(isEmpty) break;
+            if(isDuplicate) break;
+
+        }
+    }
+
+    int32_t sum = 0;
+
+    if(groupCnt == 1) sum = 4;
+    if(groupCnt == 2) sum = 7;
+    if(groupCnt == 3) sum = 9;
+    if(groupCnt >= 4) sum = 10;
+    player[playerNum].vp += sum;
+
+    printf("%d號玩家使用"VIOLET"官邸"RESET"的功能，額外得了%d分\n", playerNum, sum);
 
 }
