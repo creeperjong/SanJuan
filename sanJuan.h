@@ -116,7 +116,7 @@ void about();
 void choose_player();
 void table(sPlayer* player, int32_t num_of_player);
 void handcard(sPlayer* player, int32_t playerNum);
-void handcard_councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* start);
+void handcard_part(sPlayer* player, int32_t playerNum, sCard* start);
 
 //sanJuan.c
 
@@ -155,6 +155,7 @@ void free_card(sCard* card);
 int32_t find_tablecard(sPlayer* player, int32_t playerNum, int32_t card_id);
 sCard* find_handcard(sPlayer* player, int32_t playerNum, int32_t card_id);
 void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee);
+void goldmine(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void poor_house(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void archive(int32_t playerNum, int32_t* num_of_handcard_origin);
 void black_market(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t* fee);
@@ -170,3 +171,4 @@ void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void tavern(sPlayer* player, int32_t num_of_player, int32_t playerNum);
 void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx);
 void customs_office(sPlayer* player ,int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t phase);
+void goldsmith(sPlayer* player, int32_t num_of_player, int32_t playerNum);

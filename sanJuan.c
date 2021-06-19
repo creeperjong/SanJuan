@@ -1005,7 +1005,7 @@ void councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
     //print cards that can be discarded
 
     table(player, num_of_player);
-    handcard_councillor(player, num_of_player, playerNum, start);
+    handcard_part(player, playerNum, start);
 
     if(num_of_discard == 0){
         printf("你不需要棄牌\n");
@@ -1027,7 +1027,7 @@ void councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
             if(find_handcard(player, playerNum, discard_list[i]) == NULL){
                 continueFlag = true;
                 table(player, num_of_player);
-                handcard_councillor(player, num_of_player, playerNum, start);
+                handcard_part(player, playerNum, start);
                 printf("你需要棄掉%d張牌，請以空格為分隔符，輸入要棄掉的卡片編號（重複的牌亦須重複輸入）...\n", num_of_discard);
                 error();
                 break;
@@ -1242,6 +1242,105 @@ void produce(sPlayer*player, int32_t num_of_player, int32_t playerNum_profession
 
     }
 
+
+    
+
+}
+
+void prospector(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
+
+    int32_t num_of_card = 0;
+    char c = 0;
+    
+    //Bot
+
+    if(playerNum != HUMAN){
+
+        if(playerNum == playerNum_profession){
+            if(find(LIBRARY)){
+                library(player, playerNum, NULL, PROSPECTOR);
+                num_of_card = 2;
+            }
+            else{
+                printf("由於%d號玩家是礦工，因此可以抽一張牌\n", playerNum);
+                num_of_card = 1;
+            }
+        }
+        else{
+            printf("%d號玩家沒有任何抽牌的特權\n", playerNum);
+            num_of_card = 0;
+        }
+
+        if(num_of_card != 0) draw(player, playerNum, num_of_card);
+
+        if(find(GOLDMINE)) goldmine(player, num_of_player, playerNum);
+        if(find(GOLDSMITH)) goldsmith(player, num_of_player, playerNum);
+
+        return;
+    }
+
+    //Human
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("請選擇動作（1:抽牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+
+    while(1){
+
+        int32_t choice = 0;
+        scanf("%d", &choice);
+
+        if(choice == 1) break;
+        if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:抽牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:抽牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice < 1 || choice > 3){
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("請選擇動作（1:抽牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+            error();
+        }
+    }
+
+    table(player, num_of_player);
+
+    if(playerNum == playerNum_profession){
+        if(find(LIBRARY)){
+            library(player, playerNum, NULL, PROSPECTOR);
+            num_of_card = 2;
+        }
+        else{
+            printf("由於你是礦工，因此你可以抽一張牌\n");
+            num_of_card = 1;
+        }
+    }
+    else{
+        printf("你沒有任何抽牌的特權\n");
+        num_of_card = 0;
+    }
+    printf("\n請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
+
+    if(num_of_card != 0){
+
+        table(player, num_of_player);
+        printf("抽牌中...\n");
+        sleep(3);
+        draw(player, playerNum, num_of_card);
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請按Enter繼續...\n");
+        c = getchar();
+
+    }
+
+    if(find(GOLDMINE)) goldmine(player, num_of_player, playerNum);
+    if(find(GOLDSMITH)) goldsmith(player, num_of_player, playerNum);
+
+}
+
+void trade(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
 
     
 
@@ -1597,21 +1696,75 @@ void producer_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_pr
 
 }
 
-void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
 
-    table(player, num_of_player);
-    printf("%d號玩家選擇了礦工，現在是礦工階段\n\n", playerNum_profession);
-    printf("%d號玩家行動中...\n", playerNum_act);
-    sleep(3);
+    //Bot
+
+    if(playerNum != HUMAN){
+        table(player, num_of_player);
+        printf("%d號玩家選擇了礦工，現在是礦工階段\n\n", playerNum_profession);
+        printf("%d號玩家正在採取行動...\n\n", playerNum);
+        sleep(2);
+    }
+
+    //Human
+
+    if(playerNum == HUMAN){
+
+        table(player, num_of_player);
+        printf("%d號玩家選擇了礦工，現在是礦工階段\n\n", playerNum_profession);
+        sleep(2);
+        
+
+    }
+
+    prospector(player, num_of_player, playerNum_profession, playerNum);
+    if(playerNum != HUMAN) sleep(5);
 
 }
 
-void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum_act){
+void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
 
-    table(player, num_of_player);
-    printf("%d號玩家選擇了貿易商，現在是交易階段\n\n", playerNum_profession);
-    printf("%d號玩家行動中...\n", playerNum_act);
-    sleep(3);
+    //Bot
+
+    if(playerNum != HUMAN){
+        table(player, num_of_player);
+        printf("%d號玩家選擇了貿易商，現在是交易階段\n\n", playerNum_profession);
+        printf("%d號玩家正在採取行動...\n\n", playerNum);
+        sleep(2);
+    }
+
+    //Human
+
+    if(playerNum == HUMAN){
+
+        table(player, num_of_player);
+        printf("%d號玩家選擇了貿易商，現在是交易階段\n\n", playerNum_profession);
+        sleep(2);
+        table(player, num_of_player);
+        handcard(player, playerNum);
+        printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+
+        while(1){
+
+            int32_t choice = 0;
+            scanf("%d", &choice);
+
+            if(choice == 1) break;
+            if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+            if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+            if(choice < 1 || choice > 3){
+                table(player, num_of_player);
+                handcard(player, playerNum);
+                printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+                error();
+            }
+        }
+
+    }
+
+    trade(player, num_of_player, playerNum_profession, playerNum);
+    if(playerNum != HUMAN) sleep(3);
 
 }
 

@@ -69,8 +69,8 @@ int main(){
     //Initialize
 
     sPlayer* player = NULL;
-    int32_t governor = rand() % num_of_player + 1;
-    //int32_t governor = 1;   //Debug
+    //int32_t governor = rand() % num_of_player + 1;
+    int32_t governor = 1;   //Debug
 
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
@@ -85,7 +85,7 @@ int main(){
     while(1){   //Every governor round
         
         int32_t playerNum_profession = governor;    //Initialize for the next layer loop
-        round_start(player, num_of_player, governor);
+        //round_start(player, num_of_player, governor); //Debug
 
         for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
 

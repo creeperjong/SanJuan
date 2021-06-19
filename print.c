@@ -184,11 +184,11 @@ void handcard(sPlayer* player, int32_t playerNum){
 
 }
 
-void handcard_councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum, sCard* start){
+void handcard_part(sPlayer* player, int32_t playerNum, sCard* start){
 
     sCard* now = start;
 
-    printf("可棄手牌：　　");
+    printf("部分手牌：　　");
     
     while(now != NULL){
         printf("　　 (%02d) 　", now->id);

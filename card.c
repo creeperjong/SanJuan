@@ -34,6 +34,217 @@ void smithy(sPlayer* player, int32_t playerNum, sCard* target, int32_t* fee){
 
 }
 
+void goldmine(sPlayer* player, int32_t num_of_player, int32_t playerNum){
+
+    char c = 0;
+
+    if(playerNum != HUMAN){
+        if(bot_decision(90)){
+
+            printf("%d號玩家使用"VIOLET"金礦坑"RESET"的功能，淘金：抽四張牌，若它們的建築費用皆不同，保留其中費用最便宜的一張\n", playerNum);
+            
+            int32_t num_of_handcard_origin = player[playerNum].num_of_handcard; //backup
+            draw(player, playerNum, 4);
+
+            //Judge
+
+            //find the start of cards that can be discarded
+
+            sCard* now = player[playerNum].handcard;
+            sCard* pre = NULL;
+            sCard* start = NULL;
+            sCard* search = NULL;
+            int32_t nowNum = 1;
+
+            while(now != NULL){     //set start of display
+                if(nowNum == num_of_handcard_origin + 1) break;
+                now = now->next;
+                nowNum++;
+            }
+            start = now;
+
+            //find if there is a duplicate number
+
+            bool success = true;
+
+            while(now != NULL){
+                search = now->next;
+                while(search != NULL){
+                    if(now->cost == search->cost){
+                        success = false;
+                        break;
+                    }
+                    search = search->next;
+                }
+                now = now->next;
+                if(!success) break;
+            }
+
+            if(success) printf("%d號玩家淘到金了！可以保留費用最便宜的一張\n", playerNum);
+            else printf("%d號玩家沒淘到任何東西:(\n", playerNum);
+
+            //discard
+
+            if(success){
+
+                int32_t min = INT32_MAX;
+                sCard* minCard = NULL;
+
+                //find the minimum cost
+
+                now = start;
+                while(now != NULL){
+                    if(min > now->cost){
+                        min = now->cost;
+                        minCard = now;
+                    }
+                    now = now->next;
+                }
+
+                //discard
+
+                now = start;
+                while(now != NULL){
+                    pre = now;
+                    now = now->next;
+                    if(pre != minCard) discard(player, playerNum, pre);
+                }
+
+            }
+            else{
+                //discard
+
+                now = start;
+                while(now != NULL){
+                    pre = now;
+                    now = now->next;
+                    discard(player, playerNum, pre);
+                }
+
+            }
+        }
+        return;
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("由於你建造了"VIOLET"金礦坑"RESET"，因此你可以淘金：抽四張牌，若它們的建築費用皆不同，保留其中費用最便宜的一張\n");
+    printf("請選擇動作（1:淘金 2:查看手牌敘述 3:查看場上卡牌敘述 4:離開淘金階段）...\n");
+
+    while(1){
+
+        int32_t choice = 0;
+        scanf("%d", &choice);
+
+        if(choice == 1) break;
+        if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:淘金 2:查看手牌敘述 3:查看場上卡牌敘述 4:離開淘金階段）...");
+        if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:淘金 2:查看手牌敘述 3:查看場上卡牌敘述 4:離開淘金階段）...");
+        if(choice == 4) return;
+        if(choice < 1 || choice > 4){
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("請選擇動作（1:淘金 2:查看手牌敘述 3:查看場上卡牌敘述 4:離開淘金階段）...\n");
+            error();
+        }
+    }
+    
+    int32_t num_of_handcard_origin = player[playerNum].num_of_handcard; //backup
+
+    table(player, num_of_player);
+    printf("淘金中...\n");
+    sleep(3);
+    draw(player, playerNum, 4);
+
+    //Judge
+
+    //find the start of cards that can be discarded
+
+    sCard* now = player[playerNum].handcard;
+    sCard* pre = NULL;
+    sCard* start = NULL;
+    sCard* search = NULL;
+    int32_t nowNum = 1;
+
+    while(now != NULL){     //set start of display
+        if(nowNum == num_of_handcard_origin + 1) break;
+        now = now->next;
+        nowNum++;
+    }
+    start = now;
+
+    //find if there is a duplicate number
+
+    bool success = true;
+
+    while(now != NULL){
+        search = now->next;
+        while(search != NULL){
+            if(now->cost == search->cost){
+                success = false;
+                break;
+            }
+            search = search->next;
+        }
+        now = now->next;
+        if(!success) break;
+    }
+
+    table(player, num_of_player);
+    handcard_part(player, playerNum, start);
+    if(success) printf("你淘到金了！你可以保留費用最便宜的一張\n");
+    else printf("你沒淘到任何東西:(\n");
+    printf("\n請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
+
+    //discard
+
+    if(success){
+
+        int32_t min = INT32_MAX;
+        sCard* minCard = NULL;
+
+        //find the minimum cost
+
+        now = start;
+        while(now != NULL){
+            if(min > now->cost){
+                min = now->cost;
+                minCard = now;
+            }
+            now = now->next;
+        }
+
+        //discard
+
+        now = start;
+        while(now != NULL){
+            pre = now;
+            now = now->next;
+            if(pre != minCard) discard(player, playerNum, pre);
+        }
+
+    }
+    else{
+        //discard
+
+        now = start;
+        while(now != NULL){
+            pre = now;
+            now = now->next;
+            discard(player, playerNum, pre);
+        }
+
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("請按Enter繼續...\n");
+    c = getchar();
+
+
+}
+
 void poor_house(sPlayer* player, int32_t num_of_player, int32_t playerNum){
 
     if(player[playerNum].num_of_handcard <= 1){
@@ -334,6 +545,11 @@ void library(sPlayer* player, int32_t playerNum, int32_t* fee, int32_t phase){
         if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你可以多生產兩份貨物\n");
         else printf("%d號玩家使用"VIOLET"圖書館"RESET"的功能，可以多生產兩份貨物\n", playerNum);
     }
+
+    if(phase == PROSPECTOR){
+        if(playerNum == HUMAN) printf("由於你建造了"VIOLET"圖書館"RESET"，因此你可以抽兩張牌\n");
+        else printf("%d號玩家使用"VIOLET"圖書館"RESET"的功能，可以抽兩張牌\n", playerNum);
+    }
 }
 
 void office_building(sPlayer* player, int32_t num_of_player, int32_t playerNum){
@@ -588,5 +804,83 @@ void customs_office(sPlayer* player ,int32_t num_of_player, int32_t playerNum, i
 
         }
     }
+
+}
+
+void goldsmith(sPlayer* player, int32_t num_of_player, int32_t playerNum){
+    
+    char c = 0;
+
+    if(playerNum != HUMAN){
+
+        printf("%d號玩家使用"VIOLET"金工坊"RESET"的功能，抽一張牌，若尚未有任何玩家建造此建築，即可保留它，否則丟入棄牌堆\n", playerNum);
+
+        draw(player, playerNum, 1);
+
+        //find the card
+
+        sCard* target = player[playerNum].handcard;
+        while(target->next != NULL) target = target->next;
+        char* target_name = target->name;   //backup
+
+        //find if there exists a same building
+
+        bool success = true;
+
+        for(int32_t i = 1;i <= num_of_player;i++){
+            for(int32_t tablecardIdx = 1;tablecardIdx < player[i].num_of_tablecard;tablecardIdx++){
+                if(player[i].tablecard[tablecardIdx].id == target->id){
+                    success = false;
+                    discard(player, playerNum, target);
+                    break;
+                }
+            }
+            if(!success) break;
+        }
+
+        if(success) printf("%d號玩家保留了卡牌\n", playerNum);
+        else printf("%d號玩家抽到了%s，因此丟入棄牌堆\n", playerNum, target_name);
+
+        return;
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("由於你建造了"VIOLET"金工坊"RESET"，因此你抽一張牌，若尚未有任何玩家建造此建築，即可保留它，否則丟入棄牌堆\n");
+
+    printf("抽牌中...\n");
+    sleep(3);
+    draw(player, playerNum, 1);
+
+    //find the card
+
+    sCard* target = player[playerNum].handcard;
+    while(target->next != NULL) target = target->next;
+    char* target_name = target->name;   //backup
+
+    //find if there exists a same building
+
+    bool success = true;
+
+    for(int32_t i = 1;i <= num_of_player;i++){
+        for(int32_t tablecardIdx = 1;tablecardIdx < player[i].num_of_tablecard;tablecardIdx++){
+            if(player[i].tablecard[tablecardIdx].id == target->id){
+                success = false;
+                discard(player, playerNum, target);
+                break;
+            }
+        }
+        if(!success) break;
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("你抽到%s\n", target_name);
+
+    if(success) printf("由於尚未有玩家建造此建築，因此保留卡牌\n");
+    else printf("由於已有人建造此建築，因此丟入棄牌堆\n");
+
+    printf("\n請按Enter繼續...\n");
+    c = getchar();
 
 }
