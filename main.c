@@ -69,8 +69,8 @@ int main(){
     //Initialize
 
     sPlayer* player = NULL;
-    //int32_t governor = rand() % num_of_player + 1;
-    int32_t governor = 1;   //Debug
+    int32_t governor = rand() % num_of_player + 1;
+    //int32_t governor = 1;   //Debug
 
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
@@ -85,12 +85,14 @@ int main(){
     while(1){   //Every governor round
         
         int32_t playerNum_profession = governor;    //Initialize for the next layer loop
-        //round_start(player, num_of_player, governor); //Debug
+        round_start(player, num_of_player, governor); //Debug
 
         for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
 
             int32_t playerNum_act = playerNum_profession;   //Initialize for the next layer loop
             int32_t profession_choice = choose_profession(player, num_of_player, playerNum_profession);
+
+            bool sell_record = false;
 
             for(int32_t j = 0;j < num_of_player;j++){   //Every player take an action
 
@@ -112,9 +114,19 @@ int main(){
                     case PROSPECTOR:
                         prospector_phase(player, num_of_player, playerNum_profession, playerNum_act);
                         break;
-                    case TRADER:
+                    case TRADER:{
+                        int32_t num_of_handcard_before = player[playerNum_act].num_of_handcard;
                         trader_phase(player, num_of_player, playerNum_profession, playerNum_act);
+
+                        if(num_of_handcard_before != player[playerNum_act].num_of_handcard) sell_record = true;
+                        if(j == num_of_player - 1 && !sell_record){
+                            for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+                                if(find(COTTAGE)) cottage(player, num_of_player, playerNum);
+                            }
+                        }
+
                         break;
+                    }
                 }
 
                 //Prepare for next player to take action

@@ -7,6 +7,12 @@ int32_t discardDeckIdx = 0;
 
 bool profession_table[6] = {0};
 bool bank_used_table[5] = {0};
+int32_t price_table[5][6] = {{0, 1, 1, 1, 2, 2},
+                             {0, 1, 1, 2, 2, 2},
+                             {0, 1, 1, 2, 2, 3},
+                             {0, 1, 2, 2, 2, 3},
+                             {0, 1, 2, 2, 3, 3}};
+int32_t* price = NULL;
 
 void global_var_init(){
 
@@ -416,6 +422,29 @@ void check_tablecard_description(sPlayer* player, int32_t num_of_player, int32_t
         }
 
     }
+    printf("\n");
+
+    printf("請按Enter繼續...");
+    flush_buffer();
+    c = getchar();
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    if(afterEnd != NULL) printf("%s\n", afterEnd);
+
+}
+
+void check_price_table(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t* price, char* afterEnd){
+    
+    char c = 0;
+
+    table(player, num_of_player);
+
+    printf("目前的交易價格為：\n");
+    printf("\t"BLUE"染坊"RESET"： %d\n", price[1]);
+    printf("\t"WHITE"製糖廠"RESET"： %d\n", price[2]);
+    printf("\t"BROWN_LIGHT"菸草廠"RESET"： %d\n", price[3]);
+    printf("\t"BROWN_DARK"咖啡烘焙廠"RESET"： %d\n", price[4]);
+    printf("\t"GRAY"煉銀廠"RESET"： %d\n", price[5]);
     printf("\n");
 
     printf("請按Enter繼續...");
@@ -944,7 +973,7 @@ void councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
 
         int32_t tablecardIdx = 0;
 
-        if(tablecardIdx = find(CUSTOMS_OFFICE)) customs_office(player, num_of_player, playerNum, tablecardIdx, COUNCILLOR);
+        if(tablecardIdx = find(CUSTOMS_OFFICE)) customs_office(player, num_of_player, playerNum, tablecardIdx);
 
         return;
     }
@@ -1062,7 +1091,7 @@ void councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
 
     int32_t tablecardIdx = 0;
 
-    if(tablecardIdx = find(CUSTOMS_OFFICE)) customs_office(player, num_of_player, playerNum, tablecardIdx, COUNCILLOR);
+    if(tablecardIdx = find(CUSTOMS_OFFICE)) customs_office(player, num_of_player, playerNum, tablecardIdx);
 
 }
 
@@ -1242,9 +1271,6 @@ void produce(sPlayer*player, int32_t num_of_player, int32_t playerNum_profession
 
     }
 
-
-    
-
 }
 
 void prospector(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
@@ -1340,7 +1366,223 @@ void prospector(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
 
 }
 
-void trade(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
+void trade(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum, int32_t* price){
+
+    //Bot
+
+    if(playerNum != HUMAN){
+
+       int32_t most_num_of_product = 0;
+
+        if(playerNum == playerNum_profession){
+            if(find(LIBRARY)){
+                library(player, playerNum, NULL, PRODUCER);
+                most_num_of_product = 3;
+            }
+            else{
+                printf("由於%d號玩家是貿易商，因此可以多賣一份貨\n", playerNum);
+                most_num_of_product = 2;
+            }
+        }
+        else most_num_of_product = 1;
+        if(find(TRADING_POST)) trading_post(playerNum, &most_num_of_product);
+
+         //adjust most_num_of_product
+
+        int32_t able_to_sell = 0;
+
+        for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+            if(player[playerNum].tablecard[tablecardIdx].hasProduct 
+            && (player[playerNum].tablecard[tablecardIdx].id <= 5 || player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE)){
+                able_to_sell++;
+            }
+        }
+
+        if(able_to_sell < most_num_of_product) most_num_of_product = able_to_sell;
+
+        //randomly choose sell number
+
+        int32_t num_of_product = 0;
+
+        if(bot_decision(10)) num_of_product = 0;
+        else if(most_num_of_product == 0) num_of_product = 0;
+        else{
+            if(bot_decision(75)) num_of_product = most_num_of_product;
+            else num_of_product = rand() % most_num_of_product + 1;
+        }
+
+        //sell
+
+        int32_t earn = 0;
+
+        for(int32_t i = 0;i < num_of_product;i++){
+
+            int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+            int32_t num_of_card = 0;
+            
+            while(!player[playerNum].tablecard[tablecardIdx].hasProduct
+                  || (player[playerNum].tablecard[tablecardIdx].id > 5 && player[playerNum].tablecard[tablecardIdx].id != CUSTOMS_OFFICE)){
+                tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+            }
+
+            if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) num_of_card = 2;
+            else num_of_card = price[player[playerNum].tablecard[tablecardIdx].id];
+
+            discard_product(player, playerNum, tablecardIdx);
+            draw(player, playerNum, num_of_card);
+
+            earn += num_of_card;
+        }
+
+        if(num_of_product == 0) printf("%d號玩家沒有賣出任何貨物\n", playerNum);
+        else printf("%d號玩家以%d張牌的價格，賣掉了%d份貨物\n", playerNum, earn, num_of_product);
+
+        //after sell
+
+        int32_t tablecardIdx = 0;
+
+        if(find(MARKET_STAND)) market_stand(player, num_of_player, playerNum, num_of_product);
+        if(find(MARKET_HALL)) market_hall(player, num_of_player, playerNum, num_of_product);
+        if(num_of_product != 0){
+            if(tablecardIdx = find(HARBOR)) harbor(player, num_of_player, playerNum, tablecardIdx);
+        }
+
+        return;
+    }
+
+    //Human
+
+    int32_t most_num_of_product = 0;
+
+    table(player, num_of_player);
+
+    if(playerNum == playerNum_profession){
+        if(find(LIBRARY)){
+            library(player, playerNum, NULL, TRADER);
+            most_num_of_product = 3;
+        }
+        else{
+            printf("由於你是貿易商，因此你可以多賣一份貨\n");
+            most_num_of_product = 2;
+        }
+    }
+    else most_num_of_product = 1;
+    if(find(TRADING_POST)) trading_post(playerNum, &most_num_of_product);
+
+    char c = 0;
+
+    if(!find(TRADING_POST) && playerNum != playerNum_profession) printf("你沒有其他可增加銷量的卡牌\n");
+    printf("\n請按Enter繼續...\n");
+    flush_buffer();
+    c = getchar();
+
+    //adjust most_num_of_product
+
+    int32_t able_to_sell = 0;
+
+    for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+        if(player[playerNum].tablecard[tablecardIdx].hasProduct 
+          && (player[playerNum].tablecard[tablecardIdx].id <= 5 || player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE)){
+            able_to_sell++;
+        }
+    }
+
+    if(able_to_sell < most_num_of_product) most_num_of_product = able_to_sell;
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
+    printf("請輸入銷售數量，若不銷售則輸入0（你最多可以賣%d份貨）...\n", most_num_of_product);
+
+    while(1){
+
+        bool continueFlag = false;
+        int32_t num_of_product = 0;
+
+        scanf("%d", &num_of_product);
+
+        if(num_of_product == 0) return;
+
+        if(num_of_product > 0 && num_of_product <= most_num_of_product){
+
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("請以空格為分隔符，輸入要銷售的卡片編號，你要賣%d份貨（編號由左至右，由上至下為1-12，重複的牌亦須重複輸入）...\n", num_of_product);
+
+            //check
+
+            int32_t* product_list = NULL;
+            product_list = (int32_t*)malloc(sizeof(int32_t) * num_of_product);
+            for(int32_t i = 0;i < num_of_product;i++) scanf("%d", &product_list[i]);
+
+            for(int32_t i = 0;i < num_of_product;i++){
+
+                int32_t tablecardIdx = product_list[i];
+
+                if(!player[playerNum].tablecard[tablecardIdx].hasProduct 
+                    || (player[playerNum].tablecard[tablecardIdx].id > 5 && player[playerNum].tablecard[tablecardIdx].id != CUSTOMS_OFFICE) 
+                    || tablecardIdx < 1 || tablecardIdx > player[playerNum].num_of_tablecard){
+                    continueFlag = true;
+                    table(player, num_of_player);
+                    handcard(player , playerNum);
+                    printf("請輸入銷售數量，若不銷售則輸入0（你最多可以賣%d份貨）...\n", most_num_of_product);
+                    error();
+                    break;
+                }
+            }
+
+            if(continueFlag) continue;
+
+            //sell
+
+            int32_t earn = 0;
+
+            for(int32_t i = 0;i < num_of_product;i++){
+
+                int32_t tablecardIdx = product_list[i];
+                int32_t num_of_card = 0;
+
+                if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) num_of_card = 2;
+                else num_of_card = price[player[playerNum].tablecard[tablecardIdx].id];
+
+                discard_product(player, playerNum, tablecardIdx);
+                draw(player, playerNum, num_of_card);
+
+                earn += num_of_card;
+
+            }
+
+            free(product_list);
+
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("銷售成功！你以%d張牌的價格，賣掉了%d份貨物\n", earn, num_of_product);
+            printf("請按Enter繼續...\n");
+            flush_buffer();
+            c = getchar();
+
+            //after sell
+
+            int32_t tablecardIdx = 0;
+
+            if(find(MARKET_STAND)) market_stand(player, num_of_player, playerNum, num_of_product);
+            if(find(MARKET_HALL)) market_hall(player, num_of_player, playerNum, num_of_product);
+            if(num_of_product != 0){
+                if(tablecardIdx = find(HARBOR)) harbor(player, num_of_player, playerNum, tablecardIdx);
+            }
+
+            break;
+
+        }
+        else{
+
+            table(player, num_of_player);
+            handcard(player , playerNum);
+            printf("請輸入生產數量，若不生產則輸入0（你最多可以賣%d份貨）...\n", most_num_of_product);
+            error();         
+
+        }
+
+    }
 
     
 
@@ -1719,11 +1961,20 @@ void prospector_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_
     }
 
     prospector(player, num_of_player, playerNum_profession, playerNum);
-    if(playerNum != HUMAN) sleep(5);
+    if(playerNum != HUMAN) sleep(4);
 
 }
 
 void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession, int32_t playerNum){
+
+    //draw price table
+
+    if(playerNum_profession == playerNum){
+        
+        int32_t choice = rand() % 5;
+        price = price_table[choice];
+
+    }
 
     //Bot
 
@@ -1743,7 +1994,7 @@ void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_prof
         sleep(2);
         table(player, num_of_player);
         handcard(player, playerNum);
-        printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+        printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述 4:查看交易價格）...\n");
 
         while(1){
 
@@ -1751,20 +2002,21 @@ void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_prof
             scanf("%d", &choice);
 
             if(choice == 1) break;
-            if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...");
-            if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...");
-            if(choice < 1 || choice > 3){
+            if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述 4:查看交易價格）...");
+            if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述 4:查看交易價格）...");
+            if(choice == 4) check_price_table(player, num_of_player, playerNum, price, "請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述 4:查看交易價格）...");
+            if(choice < 1 || choice > 4){
                 table(player, num_of_player);
                 handcard(player, playerNum);
-                printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+                printf("請選擇動作（1:交易 2:查看手牌敘述 3:查看場上卡牌敘述 4:查看交易價格）...\n");
                 error();
             }
         }
 
     }
 
-    trade(player, num_of_player, playerNum_profession, playerNum);
-    if(playerNum != HUMAN) sleep(3);
+    trade(player, num_of_player, playerNum_profession, playerNum, price);
+    if(playerNum != HUMAN) sleep(4);
 
 }
 
