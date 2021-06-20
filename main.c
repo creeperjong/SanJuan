@@ -6,6 +6,9 @@ int main(){
     
     srand(time(0));
 
+    sPlayer* player = NULL;
+    int32_t num_of_player = 0;
+
     //Notice page
 
     NEW_PAGE;
@@ -37,7 +40,7 @@ int main(){
                 break;
             case 3:
                 printf("掰依:)\n");
-                return 0;
+                goto free;
             default:
                 NEW_PAGE;
                 menu();
@@ -49,8 +52,6 @@ int main(){
     }
 
     //Choose player
-
-    int32_t num_of_player = 0;
     
     NEW_PAGE;
     choose_player();
@@ -70,7 +71,6 @@ int main(){
     
     //Initialize
 
-    sPlayer* player = NULL;
     int32_t governor = rand() % num_of_player + 1;
     //int32_t governor = 1;   //Debug
 
@@ -91,68 +91,68 @@ int main(){
         int32_t playerNum_profession = governor;    //Initialize for the next layer loop
         round_start(player, num_of_player, governor); //Debug
 
-        // for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
+        for(int32_t i = 0;i < num_of_player;i++){   //Every player choose a profession
 
-        //     int32_t playerNum_act = playerNum_profession;   //Initialize for the next layer loop
-        //     int32_t profession_choice = choose_profession(player, num_of_player, playerNum_profession);
+            int32_t playerNum_act = playerNum_profession;   //Initialize for the next layer loop
+            int32_t profession_choice = choose_profession(player, num_of_player, playerNum_profession);
 
-        //     bool sell_record = false;
+            bool sell_record = false;
 
-        //     for(int32_t j = 0;j < num_of_player;j++){   //Every player take an action
+            for(int32_t j = 0;j < num_of_player;j++){   //Every player take an action
 
-        //         switch(profession_choice){
-        //             case BUILDER:
-        //                 builder_phase(player, num_of_player, playerNum_profession, playerNum_act);
-        //                 if(j == num_of_player - 1){
-        //                     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
-        //                         if(find(TAVERN)) tavern(player, num_of_player, playerNum);
-        //                     }
-        //                 }
-        //                 break;
-        //             case COUNCILLOR:
-        //                 councillor_phase(player, num_of_player, playerNum_profession, playerNum_act);
-        //                 break;
-        //             case PRODUCER:
-        //                 producer_phase(player, num_of_player, playerNum_profession, playerNum_act);
-        //                 break;
-        //             case PROSPECTOR:
-        //                 prospector_phase(player, num_of_player, playerNum_profession, playerNum_act);
-        //                 break;
-        //             case TRADER:{
-        //                 int32_t num_of_handcard_before = player[playerNum_act].num_of_handcard;
-        //                 trader_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                switch(profession_choice){
+                    case BUILDER:
+                        builder_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        if(j == num_of_player - 1){
+                            for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+                                if(find(TAVERN)) tavern(player, num_of_player, playerNum);
+                            }
+                        }
+                        break;
+                    case COUNCILLOR:
+                        councillor_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case PRODUCER:
+                        producer_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case PROSPECTOR:
+                        prospector_phase(player, num_of_player, playerNum_profession, playerNum_act);
+                        break;
+                    case TRADER:{
+                        int32_t num_of_handcard_before = player[playerNum_act].num_of_handcard;
+                        trader_phase(player, num_of_player, playerNum_profession, playerNum_act);
 
-        //                 if(num_of_handcard_before != player[playerNum_act].num_of_handcard) sell_record = true;
-        //                 if(j == num_of_player - 1 && !sell_record){
-        //                     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
-        //                         if(find(COTTAGE)) cottage(player, num_of_player, playerNum);
-        //                     }
-        //                 }
+                        if(num_of_handcard_before != player[playerNum_act].num_of_handcard) sell_record = true;
+                        if(j == num_of_player - 1 && !sell_record){
+                            for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
+                                if(find(COTTAGE)) cottage(player, num_of_player, playerNum);
+                            }
+                        }
 
-        //                 break;
-        //             }
-        //         }
+                        break;
+                    }
+                }
 
-        //         //Prepare for next player to take action
+                //Prepare for next player to take action
 
-        //         playerNum_act++;
-        //         if(playerNum_act > num_of_player) playerNum_act = 1;
+                playerNum_act++;
+                if(playerNum_act > num_of_player) playerNum_act = 1;
 
-        //         if(game_end(player, num_of_player)){
-        //             isEnd = true;
-        //             break;
-        //         }
+                if(game_end(player, num_of_player)){
+                    isEnd = true;
+                    break;
+                }
 
-        //     }
+            }
 
-        //     //Prepare for next player to choose 
+            //Prepare for next player to choose 
 
-        //     playerNum_profession++;
-        //     if(playerNum_profession > num_of_player) playerNum_profession = 1;
+            playerNum_profession++;
+            if(playerNum_profession > num_of_player) playerNum_profession = 1;
 
-        //     if(isEnd) break;
+            if(isEnd) break;
 
-        // }
+        }
 
         //Prepare for next governor
 
@@ -187,7 +187,9 @@ int main(){
 
     //Free
 
-    free_player(player, num_of_player);
+    free:
+    
+    if(player != NULL) free_player(player, num_of_player);
         
     return 0;
 }

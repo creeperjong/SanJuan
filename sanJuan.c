@@ -165,8 +165,14 @@ void draw(sPlayer* player, int32_t playerNum, int32_t num_of_card){
 
         //Redirect
 
-        if(player[playerNum].num_of_handcard != 0) pre->next = now;
-        else player[playerNum].handcard = now;
+        if(player[playerNum].num_of_handcard != 0){
+            now->next = pre->next;
+            pre->next = now;
+        }
+        else{
+            now->next = NULL;
+            player[playerNum].handcard = now;
+        }
 
         //deck
 
@@ -287,9 +293,14 @@ void put_under_card(sPlayer* player, int32_t playerNum, int32_t tablecardIdx, sC
 
     //Redirect
 
-    if(player[playerNum].tablecard[tablecardIdx].subcard != 0) pre->next = now;
-    else player[playerNum].tablecard[tablecardIdx].next = now;
-
+    if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+        now->next = pre->next;
+        pre->next = now;
+    }
+    else{
+        now->next = NULL;
+        player[playerNum].tablecard[tablecardIdx].next = now;
+    }
     //others
 
     player[playerNum].tablecard[tablecardIdx].subcard++;
@@ -374,8 +385,14 @@ void produce_product(sPlayer* player, int32_t playerNum, int32_t tablecardIdx){
 
     //Redirect
 
-    if(player[playerNum].tablecard[tablecardIdx].subcard != 0) pre->next = now;
-    else player[playerNum].tablecard[tablecardIdx].next = now;
+    if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+        now->next = pre->next;
+        pre->next = now;
+    }
+    else{
+        now->next = NULL;
+        player[playerNum].tablecard[tablecardIdx].next = now;
+    }
 
     player[playerNum].tablecard[tablecardIdx].hasProduct = true;
     player[playerNum].tablecard[tablecardIdx].subcard++;
@@ -545,7 +562,8 @@ void distribute(sPlayer* player, int32_t num_of_player, int32_t governor){
 char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tablecardIdx, int32_t type){
 
     char* blank = "　　　　　";
-    static char buf[32] = "";
+    char* buf = (char*)malloc(sizeof(char) * 32);
+
 
     if(type == TYPE_CARD){
         if(num_of_player >= playerNum){
@@ -558,6 +576,7 @@ char* print_tablecard(sPlayer* player, int32_t num_of_player, int32_t playerNum,
     if(type == TYPE_SUBCARD){
         if(num_of_player >= playerNum){
             if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+                memset(buf, 0, 32);
                 snprintf(buf, 32, "蓋牌：　%2d", player[playerNum].tablecard[tablecardIdx].subcard);
                 return buf;
             }
@@ -1041,6 +1060,26 @@ void councillor(sPlayer* player, int32_t num_of_player, int32_t playerNum_profes
     start = now;
 
     //print cards that can be discarded
+
+    table(player, num_of_player);
+    handcard_part(player, playerNum, start);
+    printf("請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+
+    while(1){
+
+        int32_t choice = 0;
+        scanf("%d", &choice);
+
+        if(choice == 1) break;
+        if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice < 1 || choice > 3){
+            table(player, num_of_player);
+            handcard_part(player, playerNum, start);
+            printf("請選擇動作（1:棄牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+            error();
+        }
+    }
 
     table(player, num_of_player);
     handcard_part(player, playerNum, start);

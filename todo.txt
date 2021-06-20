@@ -1,6 +1,3 @@
-chapel bugs(might at PUC function)
-goldmine stuck
-some part when discarding card need to show the check-description option
 robot level 2
 some interesting function, maybe modify some value
 document and presentation

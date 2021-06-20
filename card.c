@@ -504,6 +504,26 @@ void chapel(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
     table(player, num_of_player);
     handcard(player, playerNum);
     printf("由於你建造了"VIOLET"教堂"RESET"，因此你可以從手牌放一張牌至"VIOLET"教堂"RESET"下（在遊戲結束時值一分）\n");
+    printf("請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+
+    while(1){
+
+        int32_t choice = 0;
+        scanf("%d", &choice);
+
+        if(choice == 1) break;
+        if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+        if(choice < 1 || choice > 3){
+            table(player, num_of_player);
+            handcard(player, playerNum);
+            printf("請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+            error();
+        }
+    }
+
+    table(player, num_of_player);
+    handcard(player, playerNum);
     printf("請選擇一張牌放至"VIOLET"教堂"RESET"下，若不放牌則輸入0...\n");
 
     PUC_with_instruction(player, num_of_player, playerNum, tablecardIdx, "請選擇一張牌放至"VIOLET"教堂"RESET"下，若不放牌則輸入0...");
@@ -878,7 +898,27 @@ void bank(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t tab
 
         table(player, num_of_player);
         handcard(player, playerNum);
+        printf("請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
 
+        while(1){
+
+            int32_t choice = 0;
+            scanf("%d", &choice);
+
+            if(choice == 1) break;
+            if(choice == 2) check_handcard_description(player, num_of_player, playerNum, "請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+            if(choice == 3) check_tablecard_description(player, num_of_player, playerNum, "請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...");
+            if(choice < 1 || choice > 3){
+                table(player, num_of_player);
+                handcard(player, playerNum);
+                printf("請選擇動作（1:放牌 2:查看手牌敘述 3:查看場上卡牌敘述）...\n");
+                error();
+            }
+        }
+            
+
+        table(player, num_of_player);
+        handcard(player, playerNum);
         printf("請以空格為分隔符，輸入要放入的卡片編號（重複的牌亦須重複輸入）...\n");
 
         //check
@@ -998,8 +1038,14 @@ void harbor(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
 
             //Redirect
 
-            if(player[playerNum].tablecard[tablecardIdx].subcard != 0) pre->next = now;
-            else player[playerNum].tablecard[tablecardIdx].next = now;
+            if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+                now->next = pre->next;
+                pre->next = now;
+            }
+            else{
+                now->next = NULL;
+                player[playerNum].tablecard[tablecardIdx].next = now;
+            }
 
             //others
 
@@ -1043,8 +1089,14 @@ void harbor(sPlayer* player, int32_t num_of_player, int32_t playerNum, int32_t t
 
             //Redirect
 
-            if(player[playerNum].tablecard[tablecardIdx].subcard != 0) pre->next = now;
-            else player[playerNum].tablecard[tablecardIdx].next = now;
+            if(player[playerNum].tablecard[tablecardIdx].subcard != 0){
+                now->next = pre->next;
+                pre->next = now;
+            }
+            else{
+                now->next = NULL;
+                player[playerNum].tablecard[tablecardIdx].next = now;
+            }
 
             //others
 

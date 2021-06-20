@@ -44,7 +44,7 @@
 #define TRADING_POST 12
 #define WELL 13
 #define CRANE 14
-#define CHAPEL 1
+#define CHAPEL 15
 #define TOWER 16
 #define AQUADUCT 17
 #define CARPENTER 18
