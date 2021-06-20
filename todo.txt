@@ -1,5 +1,0 @@
-robot level 2
-some interesting function, maybe modify some value
-document and presentation
-
-I wanna die

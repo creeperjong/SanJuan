@@ -1,9 +1,25 @@
 #include "sanJuan.h"
 
+extern char* clear;
+
 sCard deck[139];
 sCard discardDeck[139];
 int32_t deckIdx = 0;
 int32_t discardDeckIdx = 0;
+
+//option var
+
+int32_t bot_level = 1;
+int32_t end_condition = 12;
+int32_t game_version = 2;
+
+//cheat var
+
+bool libcli = false;
+bool noBonus = false;
+bool neokent = false;
+bool covid19 = false;
+bool mask = false;
 
 bool profession_table[6] = {0};
 bool bank_used_table[5] = {0};
@@ -14,8 +30,169 @@ int32_t price_table[5][6] = {{0, 1, 1, 1, 2, 2},
                              {0, 1, 2, 2, 3, 3}};
 int32_t* price = NULL;
 
+void setting(){
+    
+    printf("(1) 設定遊戲結束條件\n");
+    printf("(2) 設定難度\n");
+    printf("(3) 設定遊戲版本\n");
+    printf("(4) 金手指\n");
+    printf("(5) 返回\n\n");
+    printf("請選擇...\n");
+
+    while(1){
+    
+        int32_t choice = 0;
+
+        
+        scanf("%d", &choice);
+
+        if(choice == 5) break;
+
+        switch(choice){
+            case 1:{
+
+                int32_t modified = 0;
+
+                NEW_PAGE;
+                printf("目前遊戲結束條件：\n");
+                printf("\t任一玩家建造%d棟建築時，遊戲立刻結束\n\n", end_condition);
+                printf("請輸入修改值(2-12)...\n");
+                scanf("%d", &modified);
+
+                NEW_PAGE;
+                printf("(1) 設定遊戲結束條件\n");
+                printf("(2) 設定難度\n");
+                printf("(3) 設定遊戲版本\n");
+                printf("(4) 金手指\n");
+                printf("(5) 返回\n\n");
+                printf("請選擇...\n");
+                
+                if(modified < 2 || modified > 12) error();
+                else{
+                    printf(GREEN"修改成功！\n"RESET);
+                    end_condition = modified;
+                }
+
+                break;
+            }
+            case 2:{
+
+                int32_t modified = 0;
+
+                NEW_PAGE;
+                printf("目前難度： Level %d\n", bot_level);
+                printf("請輸入修改值(1-2)...\n");
+                scanf("%d", &modified);
+
+                NEW_PAGE;
+                printf("(1) 設定遊戲結束條件\n");
+                printf("(2) 設定難度\n");
+                printf("(3) 設定遊戲版本\n");
+                printf("(4) 金手指\n");
+                printf("(5) 返回\n\n");
+                printf("請選擇...\n");
+                
+                if(modified < 1 || modified > 2) error();
+                else{
+                    printf(GREEN"修改成功！\n"RESET);
+                    bot_level = modified;
+                }
+
+                break;
+            }
+            case 3:{
+
+                int32_t modified = 0;
+
+                NEW_PAGE;
+                printf("目前版本： 第%d代\n", game_version);
+                printf("請輸入修改值(1-2)...\n");
+                scanf("%d", &modified);
+
+                NEW_PAGE;
+                printf("(1) 設定遊戲結束條件\n");
+                printf("(2) 設定難度\n");
+                printf("(3) 設定遊戲版本\n");
+                printf("(4) 金手指\n");
+                printf("(5) 返回\n\n");
+                printf("請選擇...\n");
+                
+                if(modified < 1 || modified > 2) error();
+                else{
+                    printf(GREEN"修改成功！\n"RESET);
+                    game_version = modified;
+                }
+
+                break;
+            }
+            case 4:{
+                
+                char code[32] = "";
+                
+                NEW_PAGE;
+                printf("請輸入作弊碼（重複輸入可取消）...\n");
+                flush_buffer();
+                fgets(code, 32, stdin);
+                code[strlen(code) - 1] = 0;
+
+                if(strncmp(code, "Libcli", strlen(code)) == 0){
+                    printf("你觸發了秘技： Libcli → 開場即獲五點vp\n");
+                    libcli = !libcli;
+                }
+                else if(strncmp(code, "IDidntFinishTheBonus", strlen(code)) == 0){
+                    printf("你觸發了秘技： IDidntFinishTheBonus → 除了你以外，每位玩家開場即獲五點vp\n");
+                    noBonus = !noBonus;
+                }
+                else if(strncmp(code, "Neokent", strlen(code)) == 0){
+                    printf("你觸發了秘技： Neokent → 開場直接獲勝\n");
+                    neokent = !neokent;
+                }
+                else if(strncmp(code, "COVID-19", strlen(code)) == 0){
+                    printf("你觸發了秘技： COVID-19 → 為彈性配合政府防疫措施，遊戲將無法進行\n");
+                    covid19 = !covid19;
+                }
+                else if(strncmp(code, "WearAFaceMask", strlen(code)) == 0){
+                    printf("你觸發了秘技： WearAFaceMask → 場上將戴上口罩，將無法檢視\n");
+                    mask = !mask;
+                }
+                else printf("你沒有觸發任何秘技\n");
+
+                printf("\n請按Enter繼續...\n");
+                getchar();
+
+                NEW_PAGE;
+                printf("(1) 設定遊戲結束條件\n");
+                printf("(2) 設定難度\n");
+                printf("(3) 設定遊戲版本\n");
+                printf("(4) 金手指\n");
+                printf("(5) 返回\n\n");
+                printf("請選擇...\n");
+
+                break;
+            }
+            default:
+                printf("(1) 設定勝利條件\n");
+                printf("(2) 設定難度\n");
+                printf("(3) 設定遊戲版本\n");
+                printf("(4) 金手指\n");
+                printf("(5) 返回\n\n");
+                printf("請選擇...\n");
+                error();
+                break;
+        }
+
+    }
+
+
+
+    
+
+}
+
 void global_var_init(){
 
+    deckIdx = 0;
+    discardDeckIdx = 0;
     memset(deck, 0, sizeof(sCard) * 139);
     memset(discardDeck, 0, sizeof(sCard) * 139);
     memset(profession_table, 0, sizeof(bool) * 6);
@@ -73,11 +250,11 @@ void card_init(int32_t num, int32_t id, char* name, char* description, int32_t c
 
 void deck_init(){
     
-    card_init(7, 1, BLUE"　染　坊　"RESET, "生產階段 → 你生產一份染料。", 1, 1);
+    card_init(6, 1, BLUE"　染　坊　"RESET, "生產階段 → 你生產一份染料。", 1, 1);
     card_init(8, 2, WHITE"　製糖廠　"RESET, "生產階段 → 你生產一份砂糖。", 2, 1);
-    card_init(9, 3, BROWN_LIGHT"　菸草廠　"RESET, "生產階段 → 你生產一份菸草。", 3, 2);
-    card_init(9, 4, BROWN_DARK"咖啡烘焙廠"RESET, "生產階段 → 你生產一份咖啡。", 4, 2);
-    card_init(9, 5, GRAY"　煉銀廠　"RESET, "生產階段 → 你生產一份銀錠。", 5, 3);
+    card_init(8, 3, BROWN_LIGHT"　菸草廠　"RESET, "生產階段 → 你生產一份菸草。", 3, 2);
+    card_init(8, 4, BROWN_DARK"咖啡烘焙廠"RESET, "生產階段 → 你生產一份咖啡。", 4, 2);
+    card_init(8, 5, GRAY"　煉銀廠　"RESET, "生產階段 → 你生產一份銀錠。", 5, 3);
     card_init(3, 6, VIOLET"　鐵匠舖　"RESET, "建築階段 → 你在建造工廠建築時少付一張牌。", 1, 1);
     card_init(3, 7, VIOLET"　金礦坑　"RESET, "礦工階段 → 你抽四張牌，若它們的建築費用皆不同，保留其中費用最便宜的一張。", 1, 1);
     card_init(3, 8, VIOLET"　檔案館　"RESET, "議員階段 → 你可以從抽取的牌或從手牌中棄牌。", 1, 1);
@@ -102,22 +279,36 @@ void deck_init(){
     card_init(2, 27, VIOLET"　市政廳　"RESET, "遊戲結束 → 你的每棟城市建築額外得一分（包括此張卡牌）。", 6, INCONCLUSIVE);
     card_init(2, 28, VIOLET"　凱旋門　"RESET, "遊戲結束 → 若你有１／２／３座紀念碑便額外獲得４／６／８分。", 6, INCONCLUSIVE);
     card_init(2, 29, VIOLET"　宮　殿　"RESET, "遊戲結束 → 你可額外獲得總分四分之一的分數（採無條件捨去）。", 6, INCONCLUSIVE);
-    card_init(3, 30, VIOLET"　警衛室　"RESET, "回合開始 → 所有沒有警衛室的玩家手牌上限減少至六張（擁有高塔的玩家上限為十二張）。", 1, 1);
-    card_init(3, 31, VIOLET"　辦公樓　"RESET, "回合開始 → 你可以棄掉一或兩張牌，然後抽等量的新牌。", 1, 1);
-    card_init(3, 32, VIOLET"　茅　屋　"RESET, "交易階段 → 如果沒有任何玩家賣貨物，則你抽一張牌。", 1, 1);
-    card_init(3, 33, VIOLET"　酒　館　"RESET, "建築階段 → 在建築階段結束時，若你的建築物數量最少，則抽一張牌。", 2, 1);
-    card_init(3, 34, VIOLET"　公　園　"RESET, "建築階段 → 當你透過起重機將公園改建時，新建築的建造費用降低6張牌（建造費最低為零）。", 3, 2);
-    card_init(3, 35, VIOLET"　銀　行　"RESET, "回合開始 → 你在一場遊戲中有一次機會將任意張數的手牌放至銀行下（在遊戲結束時每張值一分）。", 3, 2);
-    card_init(3, 36, VIOLET"　海　關　"RESET, "議員階段 → 放一份貨物至海關。　交易階段 → 賣此貨物得兩張牌。", 3, 2);
-    card_init(3, 37, VIOLET"　港　口　"RESET, "交易階段 → 你將一份剛賣掉的貨放在港口下（遊戲結束時值一分）。", 4, 2);
-    card_init(3, 38, VIOLET"　金工坊　"RESET, "礦工階段 → 你抽一張牌，若尚未有任何玩家建造此建築，即可保留它，否則丟入棄牌堆。", 5, 3);
-    card_init(2, 39, VIOLET"　官　邸　"RESET, "遊戲結束 → 將三棟費用相同的不同建築視為一組，若你擁有１／２／３／４組，則額外獲得４／７／９／１０分。", 6, INCONCLUSIVE);
-    deckIdx = 138;
+    
+    if(game_version == 2){
+        card_init(1, 1, BLUE"　染　坊　"RESET, "生產階段 → 你生產一份染料。", 1, 1);
+        card_init(1, 3, BROWN_LIGHT"　菸草廠　"RESET, "生產階段 → 你生產一份菸草。", 3, 2);
+        card_init(1, 4, BROWN_DARK"咖啡烘焙廠"RESET, "生產階段 → 你生產一份咖啡。", 4, 2);
+        card_init(1, 5, GRAY"　煉銀廠　"RESET, "生產階段 → 你生產一份銀錠。", 5, 3);
+        card_init(3, 30, VIOLET"　警衛室　"RESET, "回合開始 → 所有沒有警衛室的玩家手牌上限減少至六張（擁有高塔的玩家上限為十二張）。", 1, 1);
+        card_init(3, 31, VIOLET"　辦公樓　"RESET, "回合開始 → 你可以棄掉一或兩張牌，然後抽等量的新牌。", 1, 1);
+        card_init(3, 32, VIOLET"　茅　屋　"RESET, "交易階段 → 如果沒有任何玩家賣貨物，則你抽一張牌。", 1, 1);
+        card_init(3, 33, VIOLET"　酒　館　"RESET, "建築階段 → 在建築階段結束時，若你的建築物數量最少，則抽一張牌。", 2, 1);
+        card_init(3, 34, VIOLET"　公　園　"RESET, "建築階段 → 當你透過起重機將公園改建時，新建築的建造費用降低6張牌（建造費最低為零）。", 3, 2);
+        card_init(3, 35, VIOLET"　銀　行　"RESET, "回合開始 → 你在一場遊戲中有一次機會將任意張數的手牌放至銀行下（在遊戲結束時每張值一分）。", 3, 2);
+        card_init(3, 36, VIOLET"　海　關　"RESET, "議員階段 → 放一份貨物至海關。　交易階段 → 賣此貨物得兩張牌。", 3, 2);
+        card_init(3, 37, VIOLET"　港　口　"RESET, "交易階段 → 你將一份剛賣掉的貨放在港口下（遊戲結束時值一分）。", 4, 2);
+        card_init(3, 38, VIOLET"　金工坊　"RESET, "礦工階段 → 你抽一張牌，若尚未有任何玩家建造此建築，即可保留它，否則丟入棄牌堆。", 5, 3);
+        card_init(2, 39, VIOLET"　官　邸　"RESET, "遊戲結束 → 將三棟費用相同的不同建築視為一組，若你擁有１／２／３／４組，則額外獲得４／７／９／１０分。", 6, INCONCLUSIVE);
+    }
+    if(game_version == 1) deckIdx = 105;
+    else deckIdx = 138;
+
     discardDeckIdx = 0;
 
 }
 
 void shuffle(int32_t num_of_card){
+
+    if(num_of_card == -1){
+        if(game_version == 1) num_of_card = 106;
+        else num_of_card = 139;
+    }
 
     for(int32_t i = 0;i < num_of_card;i++){
          
@@ -600,10 +791,67 @@ int32_t choose_profession(sPlayer* player, int32_t num_of_player, int32_t player
         printf("輪到%d號玩家選擇職業中...\n", playerNum);
         sleep(2);
 
-        profession_now = rand() % 5 + 1;
-        while(profession_table[profession_now] == true) profession_now = rand() % 5 + 1;
-        profession_table[profession_now] = true;
+        if(bot_level == 1){
+            profession_now = rand() % 5 + 1;
+            while(profession_table[profession_now] == true) profession_now = rand() % 5 + 1;
+        }
+        else{
 
+            int32_t builder_chance = 20;
+            int32_t councillor_chance = 20;
+            int32_t producer_chance = 20;
+            int32_t prospector_chance = 20;
+            int32_t trader_chance = 20;
+
+            if(player[playerNum].num_of_handcard <= 3){
+                builder_chance -= 9;
+                trader_chance += 3;
+                prospector_chance += 3;
+                councillor_chance += 3;
+            }
+
+            if(player[playerNum].num_of_handcard > 3){
+                builder_chance += 9;
+                trader_chance -= 3;
+                prospector_chance -= 3;
+                councillor_chance -= 3;
+            }
+
+            //count product
+
+            int32_t num_of_product = 0;
+
+            for(int32_t tablecardIdx = 1;tablecardIdx <= player[playerNum].num_of_tablecard;tablecardIdx++){
+                if(player[playerNum].tablecard[tablecardIdx].hasProduct) num_of_product++;
+            }
+
+            if(num_of_product >= 2){
+                trader_chance += 5;
+                producer_chance -= 5;
+            }
+            else{
+                trader_chance -= 5;
+                producer_chance += 5;
+            }
+
+            int32_t choice = rand() % 100 + 1;
+
+            while(1){
+
+                if(choice <= builder_chance) profession_now = BUILDER;
+                else if(choice <= builder_chance + councillor_chance) profession_now = COUNCILLOR;
+                else if(choice <= builder_chance + councillor_chance + producer_chance) profession_now = PRODUCER;
+                else if(choice <= builder_chance + councillor_chance + producer_chance + prospector_chance) profession_now = PROSPECTOR;
+                else profession_now = TRADER;
+
+                if(profession_table[profession_now] == true) choice = rand() % 100 + 1;
+                else break;
+
+            }
+
+        }
+
+        profession_table[profession_now] = true;
         return profession_now;
     }
 
@@ -1189,12 +1437,39 @@ void produce(sPlayer*player, int32_t num_of_player, int32_t playerNum_profession
 
         //produce
 
-        for(int32_t i = 0;i < num_of_product;i++){
-            int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
-            while(player[playerNum].tablecard[tablecardIdx].id > 5 || player[playerNum].tablecard[tablecardIdx].hasProduct){
-                tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+        if(bot_level == 1){
+            for(int32_t i = 0;i < num_of_product;i++){
+                int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                while(player[playerNum].tablecard[tablecardIdx].id > 5 || player[playerNum].tablecard[tablecardIdx].hasProduct){
+                    tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                }
+                produce_product(player, playerNum, tablecardIdx);
             }
-            produce_product(player, playerNum, tablecardIdx);
+        }
+        else{
+            for(int32_t i = 0;i < num_of_product;i++){
+                int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                while(1){
+
+                    int32_t AC_chance = 0;
+                    bool AC = false;
+
+                    if(player[playerNum].tablecard[tablecardIdx].id <= 5 && !player[playerNum].tablecard[tablecardIdx].hasProduct){
+                        if(player[playerNum].tablecard[tablecardIdx].id == 1) AC_chance = 40;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 2) AC_chance = 60;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 3) AC_chance = 80;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 4) AC_chance = 90;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 5) AC_chance = 100;
+
+                        if(bot_decision(AC_chance)) AC = true;
+                    }
+
+                    if(AC) break;
+                    else tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                
+                }
+                produce_product(player, playerNum, tablecardIdx);
+            }
         }
 
         if(num_of_product == 0) printf("%d號玩家沒有生產貨物\n", playerNum);
@@ -1463,23 +1738,61 @@ void trade(sPlayer* player, int32_t num_of_player, int32_t playerNum_profession,
 
         int32_t earn = 0;
 
-        for(int32_t i = 0;i < num_of_product;i++){
+        if(bot_level == 1){
+            for(int32_t i = 0;i < num_of_product;i++){
 
-            int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
-            int32_t num_of_card = 0;
-            
-            while(!player[playerNum].tablecard[tablecardIdx].hasProduct
-                  || (player[playerNum].tablecard[tablecardIdx].id > 5 && player[playerNum].tablecard[tablecardIdx].id != CUSTOMS_OFFICE)){
-                tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                int32_t num_of_card = 0;
+                
+                while(!player[playerNum].tablecard[tablecardIdx].hasProduct
+                    || (player[playerNum].tablecard[tablecardIdx].id > 5 && player[playerNum].tablecard[tablecardIdx].id != CUSTOMS_OFFICE)){
+                    tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                }
+
+                if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) num_of_card = 2;
+                else num_of_card = price[player[playerNum].tablecard[tablecardIdx].id];
+
+                discard_product(player, playerNum, tablecardIdx);
+                draw(player, playerNum, num_of_card);
+
+                earn += num_of_card;
             }
+        }
+        else{
+            for(int32_t i = 0;i < num_of_product;i++){
 
-            if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) num_of_card = 2;
-            else num_of_card = price[player[playerNum].tablecard[tablecardIdx].id];
+                int32_t tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                int32_t num_of_card = 0;
+                
+                while(1){
 
-            discard_product(player, playerNum, tablecardIdx);
-            draw(player, playerNum, num_of_card);
+                    int32_t AC_chance = 0;
+                    bool AC = false;
+                    
+                    if(player[playerNum].tablecard[tablecardIdx].hasProduct
+                    && (player[playerNum].tablecard[tablecardIdx].id <= 5 || player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE)){
+                        if(player[playerNum].tablecard[tablecardIdx].id == 1) AC_chance = 40;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 2) AC_chance = 60;
+                        if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) AC_chance = 60;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 3) AC_chance = 80;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 4) AC_chance = 90;
+                        if(player[playerNum].tablecard[tablecardIdx].id == 5) AC_chance = 100;
 
-            earn += num_of_card;
+                        if(bot_decision(AC_chance)) AC = true;
+                    }
+
+                    if(AC) break;
+                    else tablecardIdx = rand() % player[playerNum].num_of_tablecard + 1;
+                }
+
+                if(player[playerNum].tablecard[tablecardIdx].id == CUSTOMS_OFFICE) num_of_card = 2;
+                else num_of_card = price[player[playerNum].tablecard[tablecardIdx].id];
+
+                discard_product(player, playerNum, tablecardIdx);
+                draw(player, playerNum, num_of_card);
+
+                earn += num_of_card;
+            }
         }
 
         if(num_of_product == 0) printf("%d號玩家沒有賣出任何貨物\n", playerNum);
@@ -2070,14 +2383,14 @@ void trader_phase(sPlayer* player, int32_t num_of_player, int32_t playerNum_prof
 
 void reset_profession_table(){
 
-    memset(profession_table, 0, sizeof(int32_t) * 6);
+    memset(profession_table, 0, sizeof(bool) * 6);
 
 }
 
 bool game_end(sPlayer* player, int32_t num_of_player){
 
     for(int32_t playerNum = 1;playerNum <= num_of_player;playerNum++){
-        if(player[playerNum].num_of_tablecard == 12) return true;
+        if(player[playerNum].num_of_tablecard >= end_condition) return true;
     }
 
     return false;

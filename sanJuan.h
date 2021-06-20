@@ -121,6 +121,7 @@ void result(sPlayer* player, int32_t num_of_player);
 
 //sanJuan.c
 
+void setting();
 void global_var_init();
 void player_init(sPlayer* player, int32_t num_of_player);
 void card_init(int32_t num, int32_t id, char* name, char* description, int32_t cost, int32_t score);

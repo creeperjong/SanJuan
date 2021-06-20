@@ -1,6 +1,10 @@
 #include "sanJuan.h"
 
 char* clear = "\e[H\e[2J\e[3J";
+extern bool libcli;
+extern bool noBonus;
+extern bool neokent;
+extern bool covid19;
 
 int main(){
     
@@ -34,11 +38,17 @@ int main(){
                 break;
             case 2:
                 NEW_PAGE;
-                about();
+                setting();
                 NEW_PAGE;
                 menu();
                 break;
             case 3:
+                NEW_PAGE;
+                about();
+                NEW_PAGE;
+                menu();
+                break;
+            case 4:
                 printf("掰依:)\n");
                 goto free;
             default:
@@ -56,6 +66,8 @@ int main(){
     NEW_PAGE;
     choose_player();
 
+    if(covid19) goto new_game;
+
     while(1){    
 
         scanf("%d", &num_of_player);
@@ -72,21 +84,30 @@ int main(){
     //Initialize
 
     int32_t governor = rand() % num_of_player + 1;
-    //int32_t governor = 1;   //Debug
 
     player = (sPlayer*)malloc(sizeof(sPlayer) * (num_of_player + 1));
 
     global_var_init();
     player_init(player, num_of_player);
+    if(libcli) player[1].vp += 5;
+    if(noBonus){
+        for(int32_t i = 2;i <= num_of_player;i++) player[i].vp += 5;
+    }
     deck_init();
-    shuffle(139);
+    shuffle(-1);    //start
     distribute(player, num_of_player, governor);
+
 
     //Game start
 
     bool isEnd = false;
 
     while(1){   //Every governor round
+
+        if(neokent){
+            player[1].vp = 999;
+            break;
+        }
         
         int32_t playerNum_profession = governor;    //Initialize for the next layer loop
         round_start(player, num_of_player, governor); //Debug
@@ -182,6 +203,7 @@ int main(){
     }
 
     result(player, num_of_player);
+    free_player(player, num_of_player);
 
     goto new_game;
 
